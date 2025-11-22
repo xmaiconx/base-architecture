@@ -18,13 +18,11 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@agentics/api-contracts": ["../../libs/api-contracts/src"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src"],
   "references": [
-    { "path": "./tsconfig.node.json" },
-    { "path": "../../libs/api-contracts" }
+    { "path": "./tsconfig.node.json" }
   ]
 }

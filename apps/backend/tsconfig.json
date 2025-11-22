@@ -9,7 +9,6 @@
   "exclude": ["node_modules", "dist"],
   "references": [
     { "path": "../../libs/domain" },
-    { "path": "../../libs/api-contracts" },
     { "path": "../../libs/backend" },
     { "path": "../../libs/app-database" }
   ]

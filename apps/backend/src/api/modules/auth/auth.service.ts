@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, UnauthorizedException, Inject, NotFoundException } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { JwtService } from '@nestjs/jwt';
-import { SignUpDto, SignInDto, UserResponseDto } from '@agentics/api-contracts';
+import { SignUpDto, SignInDto, UserResponseDto } from './dtos';
 import { User, EntityStatus } from '@agentics/domain';
 import { SignUpCommand, ConfirmEmailCommand, ResendConfirmationCommand } from './commands';
 import { IUserRepository } from '@agentics/database';

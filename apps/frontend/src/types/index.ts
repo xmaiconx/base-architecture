@@ -27,5 +27,8 @@ export interface FormField {
   options?: { value: string; label: string }[]
 }
 
-// Re-export shared types from @agentics/domain
-export type { User, Account } from '@agentics/domain'
+// Re-export API types (DTOs)
+export * from './api';
+
+// Re-export Domain types (Entities)
+export * from './domain';

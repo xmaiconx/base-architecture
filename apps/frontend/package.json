@@ -34,8 +34,7 @@
     "@radix-ui/react-progress": "^1.0.3",
     "@radix-ui/react-select": "^2.0.0",
     "@radix-ui/react-separator": "^1.0.3",
-    "@radix-ui/react-tabs": "^1.0.4",
-    "@agentics/api-contracts": "*"
+    "@radix-ui/react-tabs": "^1.0.4"
   },
   "devDependencies": {
     "typescript": "^5.0.0",

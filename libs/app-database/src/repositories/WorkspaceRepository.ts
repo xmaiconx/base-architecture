@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { Workspace } from '@agentics/domain';
-import { CreateWorkspaceDto, UpdateWorkspaceDto } from '@agentics/api-contracts';
 import { Database } from '../types';
 import { IWorkspaceRepository } from '../interfaces';
 

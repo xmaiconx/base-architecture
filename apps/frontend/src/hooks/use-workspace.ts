@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import type { Workspace } from '@agentics/domain'
-import type { CreateWorkspaceDto, UpdateWorkspaceDto } from '@agentics/api-contracts'
+import type { Workspace, CreateWorkspaceDto, UpdateWorkspaceDto } from '@/types'
 import { api } from '@/lib/api'
 import { QUERY_KEYS, ROUTES, API_ENDPOINTS } from '@/lib/constants'
 import { useAuthStore } from '@/stores/auth-store'

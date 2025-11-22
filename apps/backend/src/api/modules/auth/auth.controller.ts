@@ -1,5 +1,5 @@
 import { Controller, Post, Body, HttpStatus, HttpCode, Get, UseGuards, Request } from '@nestjs/common';
-import { SignUpDto, SignInDto, ConfirmEmailDto, ResendConfirmationDto } from '@agentics/api-contracts';
+import { SignUpDto, SignInDto, ConfirmEmailDto, ResendConfirmationDto } from './dtos';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 

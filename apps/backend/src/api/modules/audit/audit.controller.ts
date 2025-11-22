@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { AuditService } from './audit.service';
-import { QueryAuditLogsDto } from '@agentics/api-contracts';
+import { QueryAuditLogsDto } from './dtos';
 
 @Controller('audit-logs')
 @UseGuards(JwtAuthGuard)

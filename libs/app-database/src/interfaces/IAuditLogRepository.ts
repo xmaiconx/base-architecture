@@ -1,9 +1,26 @@
 import { AuditLog } from '@agentics/domain';
-import { CreateAuditLogDto, QueryAuditLogsDto } from '@agentics/api-contracts';
 
 export interface IAuditLogRepository {
-  create(dto: CreateAuditLogDto): Promise<AuditLog>;
+  create(data: Omit<AuditLog, 'id' | 'createdAt'>): Promise<AuditLog>;
   findById(id: string): Promise<AuditLog | null>;
-  findByFilters(query: QueryAuditLogsDto): Promise<AuditLog[]>;
-  countByFilters(query: QueryAuditLogsDto): Promise<number>;
+  findByFilters(query: {
+    workspaceId?: string;
+    accountId?: string;
+    userId?: string;
+    eventName?: string;
+    eventType?: 'domain' | 'integration';
+    startDate?: Date;
+    endDate?: Date;
+    limit?: number;
+    offset?: number;
+  }): Promise<AuditLog[]>;
+  countByFilters(query: {
+    workspaceId?: string;
+    accountId?: string;
+    userId?: string;
+    eventName?: string;
+    eventType?: 'domain' | 'integration';
+    startDate?: Date;
+    endDate?: Date;
+  }): Promise<number>;
 }

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { AuditLog } from '@agentics/domain';
-import { CreateAuditLogDto, QueryAuditLogsDto } from '@agentics/api-contracts';
 import { Database } from '../types';
 import { IAuditLogRepository } from '../interfaces';
 

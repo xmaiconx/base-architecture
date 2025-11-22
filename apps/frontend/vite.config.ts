@@ -8,7 +8,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@agentics/api-contracts': path.resolve(__dirname, '../../libs/api-contracts/src'),
     },
   },
   server: {

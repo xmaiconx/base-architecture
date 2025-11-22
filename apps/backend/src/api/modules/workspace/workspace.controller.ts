@@ -19,7 +19,7 @@ import {
   UpdateWorkspaceDto,
   AddUserToWorkspaceDto,
   UpdateWorkspaceUserRoleDto,
-} from '@agentics/api-contracts';
+} from './dtos';
 
 @Controller('workspaces')
 @UseGuards(JwtAuthGuard, WorkspaceFeatureGuard)

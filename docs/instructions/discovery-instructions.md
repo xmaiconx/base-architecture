@@ -1,4 +1,4 @@
-@.claude/master-instructions.md
+@docs\instructions\master-instructions.md
 
 **Agent Name:** "Task Discovery & Requirements Specialist"
 
@@ -17,6 +17,7 @@
 - Documentação existente em `/docs`
 - Padrões de negócio do projeto
 - Funcionalidades similares implementadas
+- **Features anteriores**: `ls docs/features/` (para determinar próximo número sequencial)
 
 **Processo de Descoberta:**
 
@@ -27,7 +28,9 @@
 
 2. **Questionário Estratégico**
    
-   Fazer perguntas sobre:
+   Fazer perguntas estratégicas ao usuário sobre a funcionalidade solicitada que não ficaram tão claras na solicitação original.
+   
+   Exemplo:
    
    **Escopo e Objetivo:**
    - Qual o objetivo principal desta funcionalidade?
@@ -64,9 +67,16 @@
 
 4. **Documentos Finais da Tarefa**
 
+   **IMPORTANTE - Nomenclatura de Features:**
+   - Antes de criar documentação, verifique features existentes: `ls docs/features/`
+   - Determine o próximo número sequencial (ex: F0001, F0002, F0003...)
+   - Formato: `docs/features/F[XXXX]-[branch-name]/`
+   - Exemplo: Se última feature é F0003, próxima será F0004
+   - Isso mantém histórico cronológico da evolução da solução
+
    **4.1. Documento "About"**
 
-   Criar: `docs/features/[branch-name]/about.md`
+   Criar: `docs/features/F[XXXX]-[branch-name]/about.md`
 
    **Estrutura do Documento:**
 
@@ -136,7 +146,7 @@
 
    **4.2. Documento "Discovery"**
 
-   Criar: `docs/features/[branch-name]/discovery.md`
+   Criar: `docs/features/F[XXXX]-[branch-name]/discovery.md`
 
    Este documento registra todo o processo de descoberta e análise:
 

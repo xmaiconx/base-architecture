@@ -24,7 +24,6 @@
     "@agentics/database": "*",
     "@agentics/backend": "*",
     "@agentics/domain": "*",
-    "@agentics/api-contracts": "*",
     "@types/amqplib": "^0.10.7",
     "amqplib": "^0.10.9",
     "bcrypt": "^5.1.0",

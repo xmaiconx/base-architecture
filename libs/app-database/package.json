@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "@agentics/domain": "*",
-    "@agentics/api-contracts": "*",
     "dotenv": "^16.4.5",
     "knex": "^3.0.0",
     "kysely": "^0.27.0",

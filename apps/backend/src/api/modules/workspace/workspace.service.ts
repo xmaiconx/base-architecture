@@ -6,7 +6,7 @@ import {
   UpdateWorkspaceDto,
   AddUserToWorkspaceDto,
   UpdateWorkspaceUserRoleDto,
-} from '@agentics/api-contracts';
+} from './dtos';
 import { WorkspaceCreatedEvent, UserAddedToWorkspaceEvent } from './events';
 import { IWorkspaceRepository, IWorkspaceUserRepository } from '@agentics/database';
 import { ILoggerService } from '@agentics/backend';
