@@ -1,339 +1,258 @@
 ---
 name: updating-claude-documentation
 description: |
-  **ALWAYS use (NEVER edit CLAUDE.md directly)** when user says: "atualizar CLAUDE.md", "verificar CLAUDE.md", "sincronizar documentação", "check if CLAUDE.md is up to date", or after adding apps/libs/modules/services/architectural changes. Systematic verification prevents documentation drift (project)
+  **SEMPRE usar (NUNCA editar CLAUDE.md diretamente)** quando usuario diz: "atualize o CLAUDE.md", "verifique se o CLAUDE.md esta atualizado"
 ---
 
-# Updating Claude Documentation
+# Atualizacao de Documentacao Claude
 
-## 🚨 CRITICAL: NEVER EDIT CLAUDE.md DIRECTLY
+Documentacao do projeto (CLAUDE.md) e fonte de verdade arquitetural para onboarding, assistentes IA e alinhamento do time. DEVE refletir estado atual do codebase, nao aspiracoes. Esta skill previne drift de documentacao atraves de verificacao sistematica antes de atualizacoes, aplicando brevidade (~50 palavras por conceito) e mantendo consistencia com padroes estabelecidos.
 
-**ALWAYS invoke this skill** instead of using Edit tool on CLAUDE.md.
+**Principio Central**: Documentacao e codigo. Docs desatualizados sao piores que nenhum doc - enganam e erodem confianca.
 
-**Trigger Phrases (use skill immediately when you see these)**:
-- "atualizar CLAUDE.md" / "update CLAUDE.md"
-- "verificar se CLAUDE.md está atualizado" / "check if CLAUDE.md is up to date"
-- "sincronizar documentação" / "sync documentation"
-- "CLAUDE.md está desatualizado" / "documentation is outdated"
-- After adding libs, modules, services, or architectural changes
+## Diretrizes de Formatacao
 
-**Why This Matters**:
-Manual edits skip systematic verification and introduce inconsistencies. This skill ensures:
-1. ✅ Verification against actual codebase state
-2. ✅ Concise, accurate updates (no verbosity)
-3. ✅ No missed conventions or architectural patterns
-4. ✅ Consistency with existing tone/format
+### Regras Obrigatorias
+- **Idioma**: Sempre pt-br no CLAUDE.md
+- **Sem emojis**: Nenhum emoji em headers ou conteudo
+- **Sem codigo de exemplo**: Apenas listar paths de arquivos importantes
+- **Brevidade**: Maximo 100 palavras por paragrafo
+- **Especificidade**: Mencionar arquivos/classes concretos com paths
 
-## Overview
+### O Que NAO Incluir
+- Blocos de codigo com implementacoes
+- Exemplos de uso de classes/funcoes
+- Controllers, DTOs, POCOs, classes de dominio puras
+- Variaveis de ambiente detalhadas
+- Scripts npm detalhados
 
-Project documentation (CLAUDE.md) is architectural source of truth for onboarding, AI assistants, and team alignment. It MUST reflect actual codebase state, not aspirations. This skill prevents documentation drift through systematic verification before updates, enforcing brevity (~50 words per concept), and maintaining consistency with established patterns.
+### O Que INCLUIR
+- Listagem de paths de enums e entities (sem codigo)
+- Paths de arquivos com regras de negocio importantes
+- Stack tecnologica com versoes
+- Convencoes de nomenclatura
+- Boas praticas (KISS, YAGNI)
+- Padroes arquiteturais (descricao textual, sem codigo)
 
-**Core Principle**: Documentation is code. Outdated docs are worse than no docs - they mislead and erode trust.
+## Processo de Atualizacao
 
-## When to Use
+### Fase 1: Auditar Estado Atual
 
-**ALWAYS use this skill when:**
-- Adding/removing packages in the monorepo (apps/*, libs/*)
-- Introducing new architectural patterns (CQRS handlers, event patterns, etc.)
-- Changing core infrastructure (database, queues, event brokers)
-- Modifying tech stack dependencies (major version bumps, library swaps)
-- Before onboarding new team members (verify freshness)
-- After 5+ feature commits without doc updates
+**Objetivo**: Identificar gaps entre CLAUDE.md e realidade do codebase.
 
-**ESPECIALLY when:**
-- You hear yourself say "I'll document this later"
-- Pull request reviewer asks "Is CLAUDE.md updated?"
-- New developer asks "Where is [feature] documented?" and it's missing
-- Git diff shows changes to shared.module.ts, worker.module.ts, or package.json
-
-**Don't skip when:**
-- "It's just a small change" - small changes accumulate into big drift
-- "Everyone already knows this" - onboarding and AI don't
-- "The code is self-documenting" - architecture and conventions are not
-
-## The Iron Law
-
-```
-DOCUMENTATION IS CODE: ALWAYS VERIFY BEFORE UPDATING
-Never document aspirations, guesses, or "should work" architectures.
-Read actual code, check git log, verify imports. Evidence first, docs second.
-```
-
-## The Update Process
-
-### Phase 1: Audit Current State
-
-**Objective**: Identify gaps between CLAUDE.md and codebase reality.
-
-**Steps**:
-0. **⚠️ MANDATÓRIO: Verify master-instructions directive exists**:
-   ```bash
-   grep -q "master-instructions.md" CLAUDE.md
-   ```
-   **If NOT found**, you MUST add this block at the very top of CLAUDE.md (after the title):
-   ```markdown
-   ## Master Instructions
-   @.claude/master-instructions.md
-   ```
-   This is **non-negotiable**. No CLAUDE.md updates proceed without this directive.
-
-1. **Check recent commits** for architectural changes:
+**Passos**:
+1. **Verificar commits recentes** para mudancas arquiteturais:
    ```bash
    git log --oneline -20 --name-status
    ```
-   Look for: new modules, deleted files, dependency changes, shared service updates
+   Procurar: novos modulos, arquivos deletados, mudancas de dependencias
 
-2. **Verify monorepo structure**:
+2. **Verificar estrutura do monorepo**:
    ```bash
    ls apps/ libs/
    ```
-   Compare against CLAUDE.md "Estrutura do Monorepo" section
+   Comparar com secao "Estrutura do Monorepo" no CLAUDE.md
 
-3. **Check package.json dependencies** for stack changes:
+3. **Verificar features desenvolvidas**:
    ```bash
-   grep -A5 "dependencies" apps/backend/package.json
+   ls docs/features/
    ```
+   Garantir que secao "Features Desenvolvidas" esta atualizada
 
-4. **Scan shared.module.ts and worker.module.ts**:
-   - New providers = new documentation needed
-   - Deleted providers = remove from docs
-   - Changed DI tokens = update examples
+### Fase 2: Mapear Stack Tecnologica
 
-**Red Flags**:
-- ❌ **CRITICAL**: Skipping master-instructions directive verification in CLAUDE.md
-- ❌ Skipping `.claude/master-instructions.md` ("I know the patterns already")
-- ❌ Skipping git log review ("I remember what changed")
-- ❌ Assuming CLAUDE.md is correct without verification
-- ❌ Documenting based on memory, not code inspection
+**Objetivo**: Descrever libs/apps de forma concisa (~50 palavras cada).
 
-### Phase 2: Map Technology Stack
-
-**Objective**: Describe libs/apps concisely (~50 words each).
-
-**Template** (per lib/app):
+**Template** (por lib/app):
 ```
-### [Package Name]
-**Purpose**: [What problem it solves] (10-15 words)
-**Key Components**: [Main exports/modules] (15-20 words)
-**Dependencies**: [Critical integrations] (10-15 words)
+### [Nome do Pacote]
+**Proposito**: [Problema que resolve] (10-15 palavras)
+**Componentes Principais**: [Exports/modulos principais] (15-20 palavras)
+**Dependencias**: [Integracoes criticas] (10-15 palavras)
 ```
 
-**Examples**:
+**Diretrizes**:
+- Alvo: 40-60 palavras total
+- Ser especifico: "Kysely 0.27 para queries type-safe" nao "coisas de banco"
+- Listar exports concretos: "EmailQueueService, ResendEmailService" nao "varios servicos"
+- Omitir obviedades: Nao dizer "escrito em TypeScript" para cada pacote
 
-<Good>
-### @agentics/domain
-**Purpose**: Pure domain layer with entities, enums, and business rules. No external dependencies.
-**Key Components**: Account, User, Workspace entities; UserRole, EntityStatus enums; domain interfaces.
-**Dependencies**: Zero dependencies (pure TypeScript).
-</Good>
+### Fase 3: Atualizar Secoes Afetadas
 
-<Bad>
-### @agentics/domain
-This package contains all the domain entities and stuff we use across the application. It has users, accounts, workspaces, and lots of other things. We also have some enums here for statuses and roles. It's really important because everything depends on it. We try to keep it clean and follow DDD principles as much as possible. There are also some value objects we might add later.
+**Objetivo**: Modificar apenas secoes impactadas por mudancas, preservando estilo.
 
-**Problem**: 73 words (too long), vague ("stuff", "things"), includes aspirations ("might add later").
-</Bad>
+**Mapa de Secoes do CLAUDE.md**:
+1. **Stack Tecnologica** - Dependencias, versoes, libs core
+2. **Clean Architecture** - Estrutura do monorepo (apps/*, libs/*)
+3. **Convencoes de Nomenclatura** - Padroes de naming
+4. **Estrutura de Arquivos** - Novos modulos ou convencoes
+5. **Arquitetura Backend** - Shared.module, worker.module, CQRS
+6. **Padroes Arquiteturais** - Novos padroes (factories, strategies, etc.)
+7. **Multi-Tenancy** - Mudancas de isolamento de tenant
+8. **Database** - Atualizacoes de schema, novas tabelas
+9. **Arquitetura Frontend** - Novas pages, stores, components
+10. **Boas Praticas** - Novas convencoes ou anti-patterns
+11. **Arquivos com Regras de Negocio** - Arquivos criticos com logica de negocio
+12. **Features Desenvolvidas** - Referencia a /docs/features/*
+13. **Principios de Design** - KISS, YAGNI, SOLID
 
-**Guidelines**:
-- Target: 40-60 words total
-- Be specific: "Kysely 0.27 for type-safe queries" not "database stuff"
-- List concrete exports: "EmailQueueService, ResendEmailService" not "various services"
-- Omit obvious details: Don't say "written in TypeScript" for every package
-
-### Phase 3: Update Affected Sections
-
-**Objective**: Modify only sections impacted by changes, preserving style.
-
-**CLAUDE.md Section Map**:
-1. **Stack Tecnológica** - Dependencies, versions, core libs
-2. **Clean Architecture** - Monorepo structure (apps/*, libs/*)
-3. **Convenções de Nomenclatura** - Naming patterns (if new patterns added)
-4. **File Structure & Separation of Concerns** - New modules or file conventions
-5. **Backend Architecture** - Shared.module, worker.module, CQRS updates
-6. **Padrões Arquiteturais** - New patterns (factories, strategies, etc.)
-7. **Multi-Tenancy** - Tenant isolation changes
-8. **Database** - Schema updates, new tables, migrations
-9. **Configuration & Environment** - New env vars
-10. **Scripts Disponíveis** - New npm scripts
-11. **Frontend Architecture** - New pages, stores, components
-12. **Best Practices** - New conventions or anti-patterns
-13. **Observability** - Logging/monitoring changes
-14. **Configuration Best Practices** - Service configuration patterns
-15. **Key Files** - New critical files (module roots, etc.)
-16. **Design Principles** - Rarely changes
-
-**Update Strategy**:
-- ✅ Locate exact subsection needing update
-- ✅ Preserve existing tone and format (emoji, checkmarks, structure)
-- ✅ Keep examples minimal (5-10 lines max)
-- ✅ Use ✅/❌ for best practices
-- ✅ Add "Por quê?" explanations for non-obvious rules
+**Estrategia de Atualizacao**:
+- Localizar subsecao exata que precisa atualizacao
+- Preservar tom e formato existente
+- Usar marcadores para boas praticas (Correto/Errado)
+- Adicionar explicacoes "Por que?" para regras nao obvias
 
 **Red Flags**:
-- ❌ Rewriting entire sections when only one subsection changed
-- ❌ Changing tone from concise to verbose
-- ❌ Adding 50-line code examples (use 5-10 lines)
-- ❌ Removing existing good examples to make room for new ones (expand section instead)
+- Reescrever secoes inteiras quando apenas uma subsecao mudou
+- Mudar tom de conciso para verboso
+- Adicionar blocos de codigo extensos
+- Remover informacoes existentes validas para dar espaco a novas
 
-### Phase 4: Verify Consistency
+### Fase 4: Verificar Consistencia
 
-**Objective**: Ensure update matches established patterns.
+**Objetivo**: Garantir que atualizacao segue padroes estabelecidos.
 
 **Checklist**:
-- [ ] **Master Instructions Directive**: CLAUDE.md contains the master-instructions.md reference at top
-- [ ] **Master Instructions Read**: Read `.claude/master-instructions.md` before making updates
-- [ ] **Brevity**: No single paragraph exceeds 100 words
-- [ ] **Examples**: Code blocks are 5-15 lines, not 50+
-- [ ] **Specificity**: Mentions concrete files/classes (e.g., "apps/backend/src/shared/shared.module.ts")
-- [ ] **Versions**: Includes version numbers for dependencies (e.g., "NestJS 10", "Kysely 0.27")
-- [ ] **Formatting**:
-  - [ ] Section headers use emoji (📋, 🏗️, 🔧, etc.)
-  - [ ] Code blocks specify language (```typescript, ```bash, etc.)
-  - [ ] Best practices use ✅/❌ prefixes
-  - [ ] Conventions use camelCase, PascalCase, snake_case formatting
-- [ ] **Cross-references**: File paths match actual structure
-- [ ] **Tone**: Portuguese headers, English code terms, no excessive politeness
+- [ ] **Brevidade**: Nenhum paragrafo excede 100 palavras
+- [ ] **Especificidade**: Menciona arquivos/classes concretos
+- [ ] **Versoes**: Inclui numeros de versao para dependencias
+- [ ] **Formatacao**:
+  - [ ] Sem emojis em headers
+  - [ ] Blocos de codigo especificam linguagem apenas para comandos bash
+  - [ ] Convencoes usam camelCase, PascalCase, snake_case conforme contexto
+- [ ] **Cross-references**: Paths de arquivos correspondem a estrutura real
+- [ ] **Idioma**: Sempre pt-br
 
-**Verification Commands**:
+**Comandos de Verificacao**:
 ```bash
-# Verify file paths mentioned in docs exist
+# Verificar se paths mencionados existem
 grep -oP '`[^`]+\.(ts|js|json|yml)`' CLAUDE.md | sort -u
 
-# Check for outdated package names
+# Verificar nomes de pacotes
 grep "@agentics" CLAUDE.md
-
-# Validate referenced files exist
-cat apps/backend/src/shared/shared.module.ts > /dev/null
 ```
 
-**Red Flags**:
-- ❌ "Looks good enough" without running verification commands
-- ❌ Skipping format consistency check (emoji, checkmarks)
-- ❌ Not testing referenced file paths
+## Secao: Arquivos com Regras de Negocio
 
-## Common Rationalizations (and Reality)
+Esta secao substitui "Key Files" e deve listar APENAS arquivos que contem logica de negocio importante.
 
-| Excuse | Reality |
-|--------|---------|
-| "Master-instructions directive is already there" | Verify with grep. Trust but verify. Takes 2 seconds. |
-| "I'll document this later" | Later never comes. Do it now while context is fresh. |
-| "It's just a small change" | Small changes accumulate. Broken window theory applies. |
-| "The code is self-documenting" | Architecture, conventions, and "why" decisions are not in code. |
-| "Everyone on the team knows this" | Onboarding, future you, and AI assistants don't. |
-| "Documentation always gets outdated anyway" | Only if you don't maintain it. This skill prevents that. |
-| "I'm too tired to write docs now" | Then you're too tired to merge. Docs = part of done. |
+**O Que Incluir**:
+- Services que orquestram logica de negocio
+- Command Handlers que implementam validacoes
+- Pipeline Steps que executam fluxos
+- Factories que criam objetos complexos
 
-## Red Flags: You're Violating the Spirit
+**O Que NAO Incluir**:
+- Controllers (apenas roteamento)
+- DTOs (apenas estrutura de dados)
+- POCOs/Entities (apenas definicao de dados)
+- Repositories (apenas acesso a dados)
+- Interfaces (apenas contratos)
 
-Watch for these thoughts/statements:
-- "The master-instructions directive is probably already in CLAUDE.md" (verify first!)
-- "I'll add a TODO comment to document this later"
-- "Let me just push this, docs can wait"
-- "It works, that's what matters" (without updating CLAUDE.md)
-- "Nobody reads this anyway"
-- Writing aspirational docs: "This will support X feature" (not yet implemented)
-- Copy-pasting from old docs without verifying current code
-- Adding verbose explanations that belong in comments, not architecture docs
-- Documenting implementation details instead of patterns/conventions
+**Formato**:
+```
+### Arquivos com Regras de Negocio
 
-## Quick Reference: Writing Patterns
+**Backend - Services**
+- apps/backend/src/api/modules/auth/auth.service.ts - Orquestra autenticacao, validacao de credenciais e geracao de tokens JWT
+- apps/backend/src/api/modules/workspace/workspace.service.ts - Gerencia criacao e associacao de usuarios a workspaces
 
-### Master-Instructions Directive (MANDATORY at top of CLAUDE.md)
-```markdown
-# [Project Name] - Development Guide
+**Backend - Command Handlers**
+- apps/backend/src/api/modules/auth/commands/handlers/SignUpCommandHandler.ts - Valida dados de cadastro, cria conta e usuario, emite eventos
 
-⚠️ **IMPORTANTE**: Antes de ler este documento, SEMPRE consulte `.claude/master-instructions.md` primeiro. Este arquivo contém diretrizes meta que governam todas as convenções e padrões descritos aqui.
-
-## [First section...]
+**Backend - Pipeline Steps**
+- apps/backend/src/shared/messages/pipeline/steps/GenerateAIResponseStep.ts - Processa contexto e gera resposta usando assistente IA configurado
 ```
 
-### Package Description Template (~50 words)
-```
-**Purpose**: [Problem solved in 10-15 words]
-**Key Components**: [Main exports, 15-20 words]
-**Dependencies**: [Critical integrations, 10-15 words]
-```
+**Regra**: Cada arquivo com descricao de ~20 palavras explicando a regra de negocio principal.
 
-### Code Example Guidelines
-- Max 10 lines per example
-- Show correct pattern, not full implementation
-- Use comments for clarity: `// ✅ CORRETO` or `// ❌ ERRADO`
-- Include file path reference: `// apps/backend/src/shared/shared.module.ts`
+## Secao: Features Desenvolvidas
 
-### Best Practice Format
+Esta secao DEVE existir no CLAUDE.md e referenciar a pasta /docs/features/*.
+
+**Conteudo Obrigatorio**:
 ```
-✅ Always inject ILoggerService interface, never concrete WinstonLoggerService
-❌ Never inject ConfigService directly, always use IConfigurationService
+### Features Desenvolvidas
+
+Funcionalidades desenvolvidas no projeto estao documentadas em /docs/features/. Cada feature possui pasta propria com estrutura padronizada contendo tres documentos: about.md (requisitos e escopo), discovery.md (processo de descoberta e decisoes) e implementation.md (detalhes tecnicos da implementacao). Consultar esta pasta para entender contexto de features existentes antes de implementar novas funcionalidades.
 ```
 
-### Section Update Checklist
-When adding new architectural pattern:
-- [ ] Add to "Padrões Arquiteturais" with brief description
-- [ ] Update "Backend Architecture" if affects modules
-- [ ] Add example to "Best Practices" (✅/❌)
-- [ ] Reference in "Key Files" if introduces new critical file
-- [ ] Total addition: 100-200 words maximum
+**Proposito**: Orientar desenvolvedores e assistentes IA a consultarem /docs/features/ para entender contexto de features existentes antes de iniciar novas implementacoes.
 
-## Integration with Other Skills
+## Secao: Enums e Entities
 
-**Use before this skill**:
-- `systematic-debugging` - If unsure what changed, debug the codebase first
-- `root-cause-tracing` - Trace architectural changes back to requirements
+Listar APENAS paths, sem codigo:
 
-**Use after this skill**:
-- `verification-before-completion` - Always verify paths/commands in docs work
-- `requesting-code-review` - Have docs reviewed as part of PR
-
-**Related skills**:
-- `writing-plans` - Plans often become documentation sections
-- `test-driven-development` - Testing patterns belong in CLAUDE.md
-
-## Real-World Impact
-
-**Scenario 0: Missing Master-Instructions Directive**
+**Formato Correto**:
 ```
-CLAUDE.md exists but has no reference to .claude/master-instructions.md
+### Domain Layer
 
-Impact: Developer/AI reads CLAUDE.md, misses meta-directives in master-instructions.
-Applies outdated or wrong conventions. Creates inconsistent code.
+**Entities** (libs/domain/src/entities/)
+- Account.ts
+- User.ts
+- Workspace.ts
+- AuditLog.ts
 
-Fix: Add directive at top of CLAUDE.md (Step 0 of Phase 1). Takes 10 seconds.
-Result: 100% compliance with meta-level documentation governance.
+**Enums** (libs/domain/src/enums/)
+- EntityStatus.ts
+- UserRole.ts
+- OnboardingStatus.ts
 ```
 
-**Scenario 1: Outdated Monorepo Structure**
-```
-Git log shows: "Add libs/mercadophone package"
-CLAUDE.md shows:
-  libs/
-  ├── domain/
-  ├── api-contracts/
-  ├── backend/
-  └── app-database/
-
-Missing: libs/mercadophone
-
-Impact: New developer clones repo, reads CLAUDE.md, confused by unlisted package.
-Fix: 30 seconds to add libs/mercadophone to diagram + 50-word description.
+**Formato Errado** (NAO usar):
+```typescript
+// NAO incluir codigo como este
+export enum UserRole {
+  ADMIN = 'admin',
+  USER = 'user'
+}
 ```
 
-**Scenario 2: Event Broker Evolution**
-```
-Git log shows: "Replace EventBrokerService with BullMQEventBrokerService"
-CLAUDE.md still references: "IEventBroker → EventBrokerService"
+## Racionalizacoes Comuns (e Realidade)
 
-Impact: AI assistant suggests old EventBrokerService in new code.
-Fix: Update Shared Module section, add migration note, 2 minutes.
-```
+| Desculpa | Realidade |
+|----------|-----------|
+| "Vou documentar isso depois" | Depois nunca chega. Faca agora enquanto contexto esta fresco. |
+| "E so uma pequena mudanca" | Pequenas mudancas acumulam. Teoria da janela quebrada se aplica. |
+| "O codigo e auto-documentado" | Arquitetura, convencoes e decisoes de "por que" nao estao no codigo. |
+| "Todo mundo no time sabe disso" | Onboarding, voce do futuro e assistentes IA nao sabem. |
+| "Documentacao sempre fica desatualizada" | So se voce nao mantiver. Esta skill previne isso. |
 
-## Final Note: Documentation is a Feature
+## Red Flags: Voce Esta Violando o Espirito
 
-Treat CLAUDE.md updates with the same rigor as code:
-- Review in PRs
-- Run verification commands
-- Test that paths/examples work
-- Enforce in CI (future: lint docs for broken paths)
+Observe estes pensamentos/declaracoes:
+- "Vou adicionar um TODO para documentar isso depois"
+- "Deixa eu so fazer push, docs podem esperar"
+- "Funciona, e isso que importa" (sem atualizar CLAUDE.md)
+- "Ninguem le isso mesmo"
+- Escrever docs aspiracionais: "Isso vai suportar feature X" (ainda nao implementada)
+- Copiar/colar de docs antigos sem verificar codigo atual
+- Adicionar explicacoes verbosas que pertencem a comentarios, nao docs de arquitetura
+- Documentar detalhes de implementacao ao inves de padroes/convencoes
+- Adicionar emojis ou blocos de codigo extensos
 
-**Evidence before claims**: If you document a pattern, verify it exists in code first.
+## Integracao com Outras Skills
 
-No exceptions. No "later". No rationalization.
+**Usar antes desta skill**:
+- `systematic-debugging` - Se incerto sobre o que mudou, debugar codebase primeiro
+- `root-cause-tracing` - Rastrear mudancas arquiteturais ate requisitos
+
+**Usar apos esta skill**:
+- `verification-before-completion` - Sempre verificar se paths/comandos nos docs funcionam
+- `requesting-code-review` - Ter docs revisados como parte do PR
+
+**Skills relacionadas**:
+- `writing-plans` - Planos frequentemente se tornam secoes de documentacao
+- `test-driven-development` - Padroes de teste pertencem ao CLAUDE.md
+
+## Nota Final: Documentacao e uma Feature
+
+Tratar atualizacoes do CLAUDE.md com o mesmo rigor que codigo:
+- Revisar em PRs
+- Executar comandos de verificacao
+- Testar que paths funcionam
+- Aplicar em CI (futuro: lint docs para paths quebrados)
+
+**Evidencia antes de afirmacoes**: Se documentar um padrao, verificar que existe no codigo primeiro.
+
+Sem excecoes. Sem "depois". Sem racionalizacao.
