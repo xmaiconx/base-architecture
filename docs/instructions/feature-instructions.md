@@ -1,25 +1,25 @@
-@.claude/master-instructions.md
-
----
-
 ## Workflow de Desenvolvimento Completo
 
 ### FASE 1: Branch Management
 
-**Antes de iniciar qualquer tarefa de desenvolvimento:**
+**APÓS o Task Discovery Agent ter criado a documentação:**
 
 1. **Verificar branch atual**
    - Execute: `git branch --show-current`
-   
+
 2. **Se estiver em `main` ou `master`:**
-   - Criar nova branch com nome significativo seguindo convenções:
+   - **Usar o nome da pasta criada pelo Discovery Agent:**
+     - A pasta `docs/features/Fxxxx-nome/` já foi criada
+     - O nome da branch deve ser IDÊNTICO ao nome da pasta (sem o prefixo `docs/features/`)
+   - Criar nova branch seguindo convenções:
      - `feature/` - para novas funcionalidades
      - `fix/` - para correções de bugs
      - `refactor/` - para refatorações
      - `docs/` - para documentação
-   - Padrão de nome: `tipo/descricao-curta-kebab-case`
-   - Exemplo: `feature/jwt-authentication`, `fix/payment-validation`
-   - Execute: `git checkout -b [nome-da-branch]`
+   - **IMPORTANTE:** O nome da branch DEVE incluir o ID sequencial (Fxxxx) determinado pelo Discovery
+   - Padrão de nome: `tipo/Fxxxx-nome-da-pasta`
+   - Exemplo: Se pasta é `F0005-jwt-authentication` -> Branch `feature/F0005-jwt-authentication`
+   - Execute: `git checkout -b [tipo]/[nome-da-pasta]`
 
 3. **Abrir Pull Request em Draft Mode:**
    - Após o primeiro commit, criar PR em modo draft
@@ -44,8 +44,8 @@
 6. Criar plano de desenvolvimento detalhado
 
 **Contexto a Carregar:**
-- Documento de tarefa: `docs/features/[branch-name]/about.md`
-- Documento de discovery: `docs/features/[branch-name]/discovery.md`
+- Documento de tarefa: `docs/features/[Fxxx]-[nome-da-branch]/about.md`
+- Documento de discovery: `docs/features/[Fxxx]-[nome-da-branch]/discovery.md`
 - Arquitetura atual do projeto (TUDO)
 - Padrões de API existentes
 - Padrões de workers/eventos existentes
@@ -55,7 +55,12 @@
 - Estrutura de pastas completa
 - Configurações de build e deploy
 
-**Output:** Criar `docs/features/[branch-name]/plan.md`
+**IMPORTANTE - Consistência:**
+- O nome da pasta em `docs/features/` é determinado pelo Discovery Agent
+- O nome da branch deve ser IDÊNTICO ao nome da pasta (com o prefixo apropriado)
+- Exemplo: Pasta `docs/features/F0005-login/` -> Branch `feature/F0005-login`
+
+**Output:** Criar `docs/features/[FXXXX]-[nome-da-branch]/plan.md`
 
 **Estrutura do Plano:**
 
@@ -280,8 +285,8 @@ Esta seção define quais TechLead Agents devem ser criados na próxima fase:
 **Agent Name:** "Backend API Development Specialist"
 
 **Contexto objetivo a Carregar:**
-- `docs/features/[branch-name]/about.md` (documento de requisitos)
-- `docs/features/[branch-name]/plan.md` (plano técnico COMPLETO)
+- `docs/features/[FXXXX]-[nome-da-branch]/about.md` (documento de requisitos)
+- `docs/features/[FXXXX]-[nome-da-branch]/plan.md` (plano técnico COMPLETO)
 - Padrões de controller/handler
 - Padrões de service/repository
 - Middleware existentes
@@ -311,8 +316,8 @@ Esta seção define quais TechLead Agents devem ser criados na próxima fase:
 **Agent Name:** "Async Processing & Workers Specialist"
 
 **Contexto objetivo a Carregar:**
-- `docs/features/[branch-name]/about.md`
-- `docs/features/[branch-name]/plan.md` (especialmente Event/Command contracts)
+- `docs/features/[FXXXX]-[nome-da-branch]/about.md`
+- `docs/features/[FXXXX]-[nome-da-branch]/plan.md` (especialmente Event/Command contracts)
 - Padrões de job processing
 - Configuração de filas
 - Estratégias de retry
@@ -341,8 +346,8 @@ Esta seção define quais TechLead Agents devem ser criados na próxima fase:
 **Agent Name:** "Frontend Development Specialist"
 
 **Contexto objetivo a Carregar:**
-- `docs/features/[branch-name]/about.md`
-- `docs/features/[branch-name]/plan.md` (especialmente API contracts)
+- `docs/features/[FXXXX]-[nome-da-branch]/about.md`
+- `docs/features/[FXXXX]-[nome-da-branch]/plan.md` (especialmente API contracts)
 - Estrutura de componentes existentes
 - Padrões de state management
 - Padrões de API calls (hooks, services)
@@ -384,6 +389,16 @@ Cada um seguindo o mesmo padrão:
 
 ---
 
+## Nota Importante sobre Commit
+
+Ao finalizar o desenvolvimento, nunca faça o commit ou o stage, pois o código passará por revisão humana antes de subir as alterações.
+
+---
+## Instrução de Documentação Pós-Desenvolvimento
+
+Assim que finalizar o desenvolvimento e estiver compilando 100%, crie a documentação em `docs/features/[FXXXX]-[nome-da-branch]/implementation.md` com o caminho dos arquivos criados, desenvolvidos, excluídos com uma descrição de ~20 palavras do que foi ajustado em cada um.
+
+---
 ### FASE 4: Code Review Agent
 
 **Agent Name:** "Code Quality & Standards Enforcement Specialist"
@@ -392,8 +407,8 @@ Cada um seguindo o mesmo padrão:
 - APÓS todos os Developer Agents terem concluído
 
 **Contexto objetivo a Carregar:**
-- `docs/features/[branch-name]/about.md`
-- `docs/features/[branch-name]/plan.md`
+- `docs/features/[FXXXX]-[nome-da-branch]/about.md`
+- `docs/features/[FXXXX]-[nome-da-branch]/plan.md`
 - TODO o código produzido pelos Developer Agents
 - Guia de estilo do projeto
 - Padrões de arquitetura do projeto
@@ -440,7 +455,7 @@ Cada um seguindo o mesmo padrão:
    - Otimizações prematuras
    - Features não solicitadas
 
-**Output:** Criar `docs/features/[branch-name]/review.md`
+**Output:** Criar `docs/features/[FXXXX]-[nome-da-branch]/review.md`
 
 **Estrutura do Review:**
 
@@ -713,15 +728,15 @@ Cada um seguindo o mesmo padrão:
 4. Manter documentação concisa e objetiva
 
 **Contexto objetivo a Carregar:**
-- `docs/features/[branch-name]/about.md`
-- `docs/features/[branch-name]/plan.md`
-- `docs/features/[branch-name]/tasks/` (todos os documentos dos TechLeads)
-- `docs/features/[branch-name]/review.md` (resultado do code review)
+- `docs/features/[FXXXX]-[nome-da-branch]/about.md`
+- `docs/features/[FXXXX]-[nome-da-branch]/plan.md`
+- `docs/features/[FXXXX]-[nome-da-branch]/tasks/` (todos os documentos dos TechLeads, se existirem)
+- `docs/features/[FXXXX]-[nome-da-branch]/review.md` (resultado do code review)
 - TODO o código implementado
 - Estrutura de arquivos do projeto
 - Documentação existente em `/docs`
 
-**Output:** Criar/Atualizar `/docs/features/[nome-feature].md`
+**Output:** Criar/Atualizar `/docs/features/[FXXXX]-[nome-da-branch].md`
 
 **Estrutura da Documentação:**
 
@@ -811,7 +826,7 @@ Ao final de todo o workflow, verificar:
 - [ ] PR aberta em draft mode
 
 ### Fase 2 - Planning
-- [ ] Plano técnico `docs/features/[branch-name]/plan.md` criado
+- [ ] Plano técnico `docs/features/[FXXXX]-[nome-da-branch]/plan.md` criado
 
 ### Fase 3 - Development
 - [ ] Backend API implementado e testado (se necessário)
@@ -821,10 +836,8 @@ Ao final de todo o workflow, verificar:
 
 ### Fase 4 - Code Review
 - [ ] Code review realizado
-- [ ] Documento `docs/features/[branch-name]/review.md` criado
+- [ ] Documento `docs/features/[FXXXX]-[nome-da-branch]/review.md` criado
 - [ ] Issues críticos resolvidos
 
 ### Fase 6 - Documentation
-- [ ] Documentação da feature criada/atualizada em `/docs/features/`
-
----
+- [ ] Documentação da feature criada/atualizada em `/docs/features/[FXXXX]-[nome-da-branch].md`

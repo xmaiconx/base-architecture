@@ -1,5 +1,3 @@
-@docs\instructions\master-instructions.md
-
 **Agent Name:** "Task Discovery & Requirements Specialist"
 
 **Responsabilidades:**
