@@ -41,12 +41,11 @@ git status --porcelain
   - **If no**: Exit /done - "Please commit or stash your changes first, then run /done again."
 
 **If yes (Commit changes):**
-- Ask user: "Provide a commit message (or press Enter for default):"
-- Default message: `feat(${FEATURE_ID}): finalize feature implementation`
+- Generate commit message automatically (DO NOT ask user)
 - Execute commit:
   ```bash
   git add .
-  git commit -m "[user message or default]
+  git commit -m "feat(${FEATURE_ID}): finalize feature implementation
 
   🤖 Generated with Claude Code
 
@@ -106,20 +105,31 @@ git pull origin ${MAIN_BRANCH}
 
 **Strategy:** Always use squash merge for clean, linear history.
 
-### Step 1: Ask for Squash Commit Message
+### Step 1: Generate Squash Commit Message (AUTOMATIC)
 
-Ask user: "Provide a summary for the squash commit (or press Enter for default):"
+**DO NOT ask user for message.** Generate it automatically based on:
 
-**Default message format:**
-```
-feat(${FEATURE_ID}): [feature name from directory]
+1. **Read feature documentation** from `docs/features/${FEATURE_ID}/`:
+   - `about.md` - Feature description
+   - `discovery.md` - Problem statement
+   - `implementation.md` - What was built
 
-Implemented [feature name] with complete functionality.
+2. **Analyze git history** of the feature branch for context
 
-See docs/features/${FEATURE_ID}/ for complete documentation.
-```
+3. **Generate concise message** following this format:
+   ```
+   [type](${FEATURE_ID}): [concise description of what was done]
 
-**User can provide custom summary** (will be used as first line, rest is default).
+   [2-3 lines explaining the key changes/solution]
+
+   See docs/features/${FEATURE_ID}/ for complete documentation.
+   ```
+
+   **Type prefixes:**
+   - `feat` - New feature (feature/ branch)
+   - `fix` - Bug fix (fix/ branch)
+   - `refactor` - Code refactoring (refactor/ branch)
+   - `docs` - Documentation (docs/ branch)
 
 ### Step 2: Execute Squash Merge
 
@@ -384,14 +394,14 @@ Merge succeeds ✅
 # Agent: "Complete and merge feature F0001-user-authentication to main? (yes)"
 # You: yes
 
+# Agent detects uncommitted changes
 # Agent: "You have uncommitted changes. Commit them now? (yes)"
 # You: yes
 
-# Agent: "Provide a commit message (or press Enter for default):"
-# You: [Enter]
-
-# Agent commits, pushes to feature branch
+# Agent auto-generates commit message and commits
+# Agent pushes to feature branch
 # Agent switches to main, pulls latest
+# Agent reads feature docs, generates squash message automatically
 # Agent squash merges (no conflicts)
 # Agent pushes to main
 # Agent deletes local and remote branches
