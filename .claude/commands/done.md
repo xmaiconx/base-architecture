@@ -1,6 +1,6 @@
 # Feature Completion & Merge Specialist
 
-You are now acting as a **Feature Completion & Merge Coordinator**. Your role is to finalize the feature development, commit remaining changes, merge to main/master, and clean up the feature branch.
+You are now acting as a **Feature Completion & Merge Coordinator**. Your role is to finalize the feature development, commit remaining changes, merge to main/master using squash merge, and clean up the feature branch.
 
 This command COMPLETES the feature development workflow and integrates the feature into the main codebase.
 
@@ -24,6 +24,7 @@ CURRENT_BRANCH=$(git branch --show-current)
 - Error: "You're not on a feature branch. Cannot proceed with /done."
 - Display current branch name
 - Suggest: "Switch to your feature branch first, or use git commands manually."
+- Exit command
 
 ### Step 2: Verify Git Status
 
@@ -35,319 +36,257 @@ git status --porcelain
 
 **If there are uncommitted changes:**
 - Display list of modified/untracked files
-- Ask user: "You have uncommitted changes. What would you like to do?"
-  - **Option 1**: Commit all changes now (recommended)
-  - **Option 2**: Discard changes and proceed
-  - **Option 3**: Cancel /done (let me commit manually)
+- Ask user: "You have uncommitted changes. Commit them now? (yes/no)"
+  - **If yes**: Proceed to commit
+  - **If no**: Exit /done - "Please commit or stash your changes first, then run /done again."
 
-**If Option 1 (Commit all changes):**
+**If yes (Commit changes):**
 - Ask user: "Provide a commit message (or press Enter for default):"
 - Default message: `feat(${FEATURE_ID}): finalize feature implementation`
-- Execute commit
+- Execute commit:
+  ```bash
+  git add .
+  git commit -m "[user message or default]
 
-**If Option 2 (Discard):**
-- **WARNING**: "This will discard all uncommitted changes. Are you sure? (yes/no)"
-- If yes: `git reset --hard HEAD`
-- If no: Cancel /done
+  🤖 Generated with Claude Code
 
-**If Option 3 (Cancel):**
-- Exit command
-- User can commit manually and run `/done` again
-
-### Step 3: Load Feature Documentation
-
-```bash
-FEATURE_DIR="docs/features/${FEATURE_ID}"
-
-# Check if git-pr.md exists
-if [ -f "${FEATURE_DIR}/git-pr.md" ]; then
-    cat "${FEATURE_DIR}/git-pr.md"
-fi
-```
+  Co-Authored-By: Claude <noreply@anthropic.com>"
+  ```
 
 ## Phase 2: Final Push to Feature Branch (MANDATORY)
 
 Ensure all changes are pushed to the remote feature branch:
 
 ```bash
-# Push any remaining commits to feature branch
+# Push to feature branch
 git push origin ${CURRENT_BRANCH}
 ```
 
-**Verify push succeeded:**
-- Check for errors
-- If push fails (e.g., diverged branches), ask user how to proceed:
-  - Pull and rebase: `git pull --rebase origin ${CURRENT_BRANCH}`
-  - Force push (dangerous): `git push --force-with-lease origin ${CURRENT_BRANCH}`
-  - Cancel and let user handle manually
+**If push fails:**
+- Check if it's a divergence issue
+- Ask user: "Remote branch has diverged. Pull and rebase? (yes/no)"
+  - **If yes**: `git pull --rebase origin ${CURRENT_BRANCH}` then retry push
+  - **If no**: Exit /done - "Please resolve manually and run /done again."
 
 ## Phase 3: Switch to Main Branch (MANDATORY)
 
-Detect the main branch name:
+### Step 1: Detect Main Branch
 
 ```bash
-# Try to detect main branch (main or master)
+# Detect main branch (main or master)
 if git show-ref --verify --quiet refs/heads/main; then
     MAIN_BRANCH="main"
 elif git show-ref --verify --quiet refs/heads/master; then
     MAIN_BRANCH="master"
 else
     # Ask user
-    echo "Cannot detect main branch. Is it 'main' or 'master'?"
+    echo "Cannot detect main branch. Please specify: main or master?"
 fi
 ```
 
-Switch to main branch:
+### Step 2: Checkout and Update Main
 
 ```bash
 # Checkout main branch
 git checkout ${MAIN_BRANCH}
 
-# Pull latest changes from origin
+# Pull latest changes
 git pull origin ${MAIN_BRANCH}
 ```
 
-**Verify checkout succeeded:**
-- Confirm we're now on main/master
-- Confirm pull succeeded
-- If conflicts during pull, ask user to resolve manually
+**If pull fails or has conflicts:**
+- Exit /done with error message
+- "Main branch has conflicts. Please resolve manually:
+  1. git checkout ${MAIN_BRANCH}
+  2. git pull origin ${MAIN_BRANCH}
+  3. Resolve conflicts
+  4. Run /done again"
 
-## Phase 4: Merge Feature Branch (MANDATORY)
+## Phase 4: Squash Merge Feature Branch (AUTOMATIC)
 
-Ask user about merge strategy:
+**Strategy:** Always use squash merge for clean, linear history.
 
-**"How would you like to merge this feature?"**
+### Step 1: Ask for Squash Commit Message
 
-1. **Merge Commit** (default, preserves history)
-   - Creates a merge commit
-   - Keeps full feature branch history
-   - Command: `git merge --no-ff ${CURRENT_BRANCH}`
+Ask user: "Provide a summary for the squash commit (or press Enter for default):"
 
-2. **Squash Merge** (clean single commit)
-   - Squashes all feature commits into one
-   - Cleaner main branch history
-   - Command: `git merge --squash ${CURRENT_BRANCH}`
-   - Requires commit message after
+**Default message format:**
+```
+feat(${FEATURE_ID}): [feature name from directory]
 
-3. **Rebase Merge** (linear history)
-   - Rebases feature commits onto main
-   - Linear history, no merge commit
-   - Command: `git rebase ${MAIN_BRANCH} ${CURRENT_BRANCH} && git checkout ${MAIN_BRANCH} && git merge ${CURRENT_BRANCH}`
-
-**Execute chosen merge strategy:**
-
-### For Merge Commit (Option 1):
-```bash
-git merge --no-ff ${CURRENT_BRANCH} -m "Merge branch '${CURRENT_BRANCH}' - ${FEATURE_ID}
-
-Completes implementation of ${FEATURE_ID}.
+Implemented [feature name] with complete functionality.
 
 See docs/features/${FEATURE_ID}/ for complete documentation.
-
-🤖 Generated with Claude Code
-
-Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
-### For Squash Merge (Option 2):
+**User can provide custom summary** (will be used as first line, rest is default).
+
+### Step 2: Execute Squash Merge
+
 ```bash
+# Squash merge feature branch
 git merge --squash ${CURRENT_BRANCH}
 
-# Ask user for squash commit message
-git commit -m "feat(${FEATURE_ID}): [user provided summary]
+# Check if merge has conflicts
+if git diff --check; then
+    # No conflicts, commit
+    git commit -m "[squash commit message]
 
-[Detailed description if provided]
+    🤖 Generated with Claude Code
 
-See docs/features/${FEATURE_ID}/ for complete documentation.
-
-🤖 Generated with Claude Code
-
-Co-Authored-By: Claude <noreply@anthropic.com>"
+    Co-Authored-By: Claude <noreply@anthropic.com>"
+else
+    # Conflicts detected - ABORT and use /fix
+    echo "MERGE CONFLICTS DETECTED"
+fi
 ```
 
-### For Rebase Merge (Option 3):
-```bash
-git checkout ${CURRENT_BRANCH}
-git rebase ${MAIN_BRANCH}
-git checkout ${MAIN_BRANCH}
-git merge ${CURRENT_BRANCH}
-```
+### Step 3: Handle Merge Conflicts (CRITICAL)
 
-**Handle merge conflicts:**
+**If conflicts are detected during squash merge:**
 
-If conflicts occur during merge:
-1. Display conflicted files
-2. Inform user: "Merge conflicts detected in:"
-   - List conflicted files
-3. Provide guidance:
+1. **Abort the merge:**
+   ```bash
+   git merge --abort
+   git checkout ${CURRENT_BRANCH}
    ```
-   Please resolve conflicts manually:
-   1. Edit the conflicted files
-   2. Mark as resolved: git add [file]
-   3. Complete merge: git commit
-   4. Run /done again to continue
+
+2. **Inform user with clear instructions:**
    ```
-4. Exit /done command (user resolves and re-runs)
+   ⚠️ MERGE CONFLICTS DETECTED
+
+   Conflicts found when attempting to merge ${CURRENT_BRANCH} into ${MAIN_BRANCH}.
+
+   **Resolution Process:**
+
+   1. Use /fix command to investigate and resolve conflicts:
+      - /fix will help you identify conflicting files
+      - /fix will guide you through resolution
+      - /fix will document the resolution in fixes.md
+
+   2. After /fix completes:
+      - Review the conflict resolutions
+      - Commit the fixes manually
+      - Push to ${CURRENT_BRANCH}
+
+   3. Run /done again:
+      - /done will retry the merge
+      - If no conflicts, merge will complete successfully
+
+   **Conflicting files:**
+   [List conflicting files from git status]
+
+   **Next command:** /fix
+   ```
+
+3. **Exit /done command**
+   - User must use `/fix` to resolve conflicts
+   - User commits and pushes fixes
+   - User runs `/done` again after resolution
+
+**Important:** Do NOT attempt to auto-resolve conflicts. Always delegate to `/fix` for proper investigation and documentation.
 
 ## Phase 5: Push Merged Changes (MANDATORY)
 
-Push the merged changes to remote main branch:
+Push the squash-merged commit to remote main:
 
 ```bash
 git push origin ${MAIN_BRANCH}
 ```
 
-**Verify push succeeded:**
-- Check for errors
-- If push rejected (non-fast-forward), inform user:
-  ```
-  Remote main has new commits. Please:
-  1. Pull latest: git pull origin ${MAIN_BRANCH}
+**If push fails (non-fast-forward):**
+- Exit /done with error
+- "Remote main has new commits. Please:
+  1. git pull origin ${MAIN_BRANCH}
   2. Resolve any conflicts
-  3. Push again: git push origin ${MAIN_BRANCH}
-  ```
+  3. git push origin ${MAIN_BRANCH}
+  4. Run /done again if needed"
 
-## Phase 6: Update PR/MR Status (OPTIONAL)
+## Phase 6: Cleanup Feature Branch (AUTOMATIC)
 
-If `git-pr.md` exists, update it:
+### Step 1: Delete Local Branch
 
 ```bash
-# Update git-pr.md status to merged
-FEATURE_DIR="docs/features/${FEATURE_ID}"
-
-# Read current git-pr.md
-# Update status checkboxes
-# Add merge information
-```
-
-**Update template:**
-```markdown
-# Pull Request / Merge Request
-
-**Branch:** `${CURRENT_BRANCH}`
-**Feature:** ${FEATURE_ID}
-**Created:** [original date]
-**Merged:** [current date and time]
-
-## PR/MR Link
-
-[original PR/MR link]
-
-## Status
-
-- [x] Draft
-- [x] Ready for Review
-- [x] Approved
-- [x] Merged ✅
-
-## Merge Details
-
-**Merged to:** ${MAIN_BRANCH}
-**Merge Date:** [current date and time]
-**Merge Strategy:** [Merge Commit / Squash / Rebase]
-**Merged By:** Claude Code
-
-## Notes
-
-[Existing notes]
-```
-
-**Commit the updated git-pr.md:**
-```bash
-git add "${FEATURE_DIR}/git-pr.md"
-git commit -m "docs: mark ${FEATURE_ID} as merged
-
-🤖 Generated with Claude Code
-
-Co-Authored-By: Claude <noreply@anthropic.com>"
-git push origin ${MAIN_BRANCH}
-```
-
-## Phase 7: Cleanup Feature Branch (OPTIONAL)
-
-Ask user: **"Would you like to delete the feature branch?"**
-
-**Options:**
-1. **Delete local and remote** (recommended after successful merge)
-2. **Delete local only** (keep remote for reference)
-3. **Keep both** (no deletion)
-
-### Delete Local and Remote (Option 1):
-```bash
-# Delete local branch
+# Delete local feature branch
 git branch -d ${CURRENT_BRANCH}
+```
 
-# Delete remote branch
+**If deletion fails (not fully merged):**
+- This shouldn't happen with squash merge, but if it does:
+- Ask user: "Branch has unmerged commits. Force delete? (yes/no)"
+  - **If yes**: `git branch -D ${CURRENT_BRANCH}`
+  - **If no**: Keep local branch
+
+### Step 2: Delete Remote Branch
+
+```bash
+# Delete remote feature branch
 git push origin --delete ${CURRENT_BRANCH}
 ```
 
-### Delete Local Only (Option 2):
-```bash
-# Delete local branch only
-git branch -d ${CURRENT_BRANCH}
-```
+**If deletion fails:**
+- Inform user but don't block
+- "Failed to delete remote branch. You can delete it manually later:
+  git push origin --delete ${CURRENT_BRANCH}"
 
-### Keep Both (Option 3):
-```bash
-# No action needed
-echo "Feature branch ${CURRENT_BRANCH} preserved locally and remotely."
-```
-
-**Note:** If branch deletion fails because branch is not fully merged, ask user:
-- "Branch may have unmerged commits. Force delete? (yes/no)"
-- If yes: `git branch -D ${CURRENT_BRANCH}` (force delete)
-- If no: Keep branch
-
-## Phase 8: Completion Summary
+## Phase 7: Completion Summary
 
 Display comprehensive completion summary:
 
-**"✅ Feature Completed and Merged!**
+```
+✅ Feature Completed and Merged!
 
-**Feature:** `${FEATURE_ID}`
-**Branch:** `${CURRENT_BRANCH}`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Actions Completed:**
-- ✅ Final changes committed and pushed to feature branch
-- ✅ Switched to `${MAIN_BRANCH}`
-- ✅ Merged `${CURRENT_BRANCH}` into `${MAIN_BRANCH}` (${MERGE_STRATEGY})
-- ✅ Pushed merged changes to remote
-- ✅ Updated git-pr.md status to Merged
-- ✅ Deleted feature branch [if applicable]
+Feature: ${FEATURE_ID}
+Branch: ${CURRENT_BRANCH}
 
-**Current Branch:** `${MAIN_BRANCH}`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Documentation:**
-- Feature docs: `docs/features/${FEATURE_ID}/`
-- All documentation preserved in main branch
+Actions Completed:
+✅ Final changes committed and pushed to feature branch
+✅ Switched to ${MAIN_BRANCH}
+✅ Squash merged ${CURRENT_BRANCH} into ${MAIN_BRANCH}
+✅ Pushed merged changes to remote
+✅ Deleted local branch: ${CURRENT_BRANCH}
+✅ Deleted remote branch: ${CURRENT_BRANCH}
 
-**What's Next:**
-1. ✅ Feature is now live in main branch
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current Branch: ${MAIN_BRANCH}
+
+Documentation: docs/features/${FEATURE_ID}/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+What's Next:
+1. ✅ Feature is now live in ${MAIN_BRANCH}
 2. Verify functionality in main branch (optional)
 3. Deploy to staging/production (if applicable)
 4. Close any related issues/tickets
-5. Start next feature with `/feature` command
+5. Start next feature with /feature command
 
-**🎉 Great work! Feature development complete.**"
+🎉 Great work! Feature development complete.
+```
 
 ---
 
 ## Critical Rules
 
-**DO NOT:**
-- Merge without pushing feature branch first
-- Force push to main/master
-- Delete branches before confirming merge succeeded
-- Skip conflict resolution
-- Proceed if user is unsure
-
 **DO:**
+- Always use squash merge (no other strategies)
 - Verify every step succeeded before proceeding
-- Give user control over merge strategy
+- Delegate conflict resolution to /fix command
+- Delete both local and remote branches automatically
+- Provide clear guidance on errors
 - Preserve all documentation in main
-- Handle errors gracefully
-- Provide clear guidance on conflicts
-- Ask for confirmation on destructive actions
+
+**DO NOT:**
+- Force push to main/master
+- Auto-resolve merge conflicts
+- Proceed if conflicts are detected
+- Skip conflict documentation
+- Delete branches before confirming merge succeeded
 
 ---
 
@@ -355,124 +294,213 @@ Display comprehensive completion summary:
 
 ### Common Errors:
 
-**1. Merge Conflicts**
-- Stop immediately
-- Display conflicted files
-- Provide clear resolution steps
-- Exit command (user resolves manually)
+**1. Merge Conflicts (MOST IMPORTANT)**
+- **Action**: Abort merge immediately
+- **Instruction**: Use /fix to resolve
+- **Process**:
+  1. /fix investigates conflicts
+  2. /fix resolves conflicts
+  3. User commits and pushes
+  4. User runs /done again
+- **Never** attempt auto-resolution
 
-**2. Push Rejected**
-- Inform user about remote changes
-- Suggest pulling and resolving
-- Do NOT force push
+**2. Push Rejected (Remote Changes)**
+- **Action**: Exit /done
+- **Instruction**: Pull, resolve, push manually
+- **Do NOT** force push
 
-**3. Branch Not Fully Merged**
-- Warn user
-- Ask for confirmation before force delete
-- Provide option to keep branch
+**3. Uncommitted Changes**
+- **Action**: Offer to commit
+- **Instruction**: Commit now or exit
+- **Default**: Safe option (commit)
 
-**4. Uncommitted Changes**
-- Never proceed without asking
-- Offer commit, discard, or cancel options
-- Default to safest option (commit)
+**4. Branch Not on Remote**
+- **Action**: Push will create it
+- **No blocking**: Normal first push
 
 **5. Permission Errors**
-- Check remote access
-- Verify branch protection rules
-- Suggest manual merge via PR/MR if needed
+- **Action**: Exit with clear message
+- **Instruction**: Check permissions, try manually
 
 ---
 
-## Alternative Workflow: PR/MR Merge
+## Conflict Resolution Workflow
 
-If your project uses PR/MR reviews:
+```
+User runs: /done
 
-**Ask user:** "Does your project require PR/MR approval before merging?"
+↓
 
-**If yes:**
-- Skip direct merge (Phases 4-5)
-- Update git-pr.md status to "Ready for Review"
-- Inform user:
-  ```
-  Your feature is ready for review!
+Merge conflicts detected
 
-  PR/MR Link: [from git-pr.md]
+↓
 
-  Next steps:
-  1. Request review from team members
-  2. Address review comments if needed
-  3. Once approved, merge via GitHub/GitLab UI
-  4. Manually delete feature branch after merge
+/done aborts and instructs:
+"Use /fix to resolve conflicts"
 
-  /done command stopped (PR/MR workflow).
-  ```
-- Exit command
+↓
 
-**If no:**
-- Proceed with direct merge (default workflow)
+User runs: /fix
 
----
+↓
 
-## Safety Checklist
+/fix investigates:
+- Identifies conflicting files
+- Analyzes root cause
+- Resolves conflicts
+- Documents in fixes.md
+- Updates implementation.md
 
-Before merging, verify:
+↓
 
-- [ ] All tests passing (if test suite exists)
-- [ ] Code compiles successfully
-- [ ] Documentation complete
-- [ ] No uncommitted changes (or committed via /done)
-- [ ] Feature branch pushed to remote
-- [ ] Main branch up to date with remote
-- [ ] User confirmed merge strategy
-- [ ] User aware of branch deletion (if applicable)
+User reviews and commits fixes:
+git add .
+git commit -m "fix: resolve merge conflicts"
+git push
+
+↓
+
+User runs: /done again
+
+↓
+
+No conflicts this time
+
+↓
+
+Merge succeeds ✅
+```
 
 ---
 
 ## Example Usage
 
-```bash
-# You've finished developing F0001-user-authentication
-# You're on branch feature/F0001-user-authentication
+### Scenario 1: Clean Merge (No Conflicts)
 
+```bash
+# On feature/F0001-user-authentication
 /done
 
 # Agent: "Complete and merge feature F0001-user-authentication to main? (yes)"
 # You: yes
 
-# Agent: "You have uncommitted changes. What would you like to do?"
-# You: Commit all changes now
+# Agent: "You have uncommitted changes. Commit them now? (yes)"
+# You: yes
 
 # Agent: "Provide a commit message (or press Enter for default):"
-# You: [Enter] # Uses default
+# You: [Enter]
 
 # Agent commits, pushes to feature branch
+# Agent switches to main, pulls latest
+# Agent squash merges (no conflicts)
+# Agent pushes to main
+# Agent deletes local and remote branches
 
-# Agent: "How would you like to merge this feature?"
-# You: Merge Commit (default)
+# ✅ Feature Completed and Merged!
+# Current Branch: main
+# 🎉 Great work!
+```
 
-# Agent switches to main, pulls, merges with --no-ff
+### Scenario 2: Merge Conflicts Detected
 
-# Agent: "Would you like to delete the feature branch?"
-# You: Delete local and remote
+```bash
+# On feature/F0002-email-notifications
+/done
 
-# Agent: "✅ Feature Completed and Merged!
-#         Feature: F0001-user-authentication
-#         Branch: feature/F0001-user-authentication
-#         Actions Completed: [list]
-#         Current Branch: main
-#         🎉 Great work! Feature development complete."
+# Agent: "Complete and merge feature F0002-email-notifications to main? (yes)"
+# You: yes
+
+# Agent commits, pushes to feature branch
+# Agent switches to main, pulls latest
+# Agent attempts squash merge
+# ⚠️ MERGE CONFLICTS DETECTED
+
+# Agent aborts merge
+# Agent returns to feature branch
+
+# Agent: "
+# ⚠️ MERGE CONFLICTS DETECTED
+#
+# Conflicts found when merging to main.
+#
+# Resolution Process:
+# 1. Use /fix command to resolve conflicts
+# 2. Commit and push fixes
+# 3. Run /done again
+#
+# Conflicting files:
+# - apps/frontend/src/components/Header.tsx
+# - apps/backend/src/api/modules/notifications/notifications.controller.ts
+#
+# Next command: /fix
+# "
+
+# You run: /fix
+# /fix investigates and resolves conflicts
+# /fix documents in fixes.md
+
+# You review, commit, push:
+git add .
+git commit -m "fix: resolve merge conflicts with main"
+git push
+
+# You run: /done
+# Agent: Merge succeeds this time ✅
+# Feature completed!
 ```
 
 ---
 
-## Integration with Workflow
-
-The complete feature workflow:
+## Integration with Complete Workflow
 
 ```
-/feature  →  /plan  →  /dev  →  /fix (iterative)  →  /done
-   ↓          ↓         ↓          ↓                    ↓
-Discovery  Planning  Development  Bug Fixing        Merge & Close
+/feature → /plan → /dev → /fix → /done
+                              ↑      ↓
+                              └──────┘
+                         (if conflicts)
 ```
 
-After `/done`, you're back on `main` and ready to start a new feature with `/feature`.
+**After /done:** You're back on main, ready to start next feature with `/feature`.
+
+---
+
+## Safety Checklist
+
+Before running /done, ensure:
+
+- [ ] All tests passing (if test suite exists)
+- [ ] Code compiles successfully
+- [ ] Documentation complete (about.md, discovery.md, plan.md, implementation.md)
+- [ ] All features working as expected
+- [ ] No known bugs (or documented in fixes.md)
+- [ ] Ready to merge to main
+
+**If unsure, test locally on main first:**
+```bash
+# Manually test merge locally (dry run)
+git checkout main
+git pull origin main
+git merge --squash feature/F000X-name
+# Check for conflicts
+git merge --abort  # abort dry run
+git checkout feature/F000X-name
+# Now run /done if dry run was clean
+```
+
+---
+
+## Squash Merge Benefits
+
+**Why squash merge is the default:**
+
+1. **Clean History**: One commit per feature in main
+2. **Easy Rollback**: Revert entire feature with one command
+3. **Clear Intent**: Each commit describes a complete feature
+4. **Reduced Noise**: No "WIP", "fix typo", "oops" commits in main
+5. **Better Bisect**: Each commit is a working state
+6. **Professional**: Clean history for open source or team review
+
+**Squash commit includes:**
+- Feature summary (what was implemented)
+- Reference to documentation directory
+- Co-authored by Claude Code attribution
