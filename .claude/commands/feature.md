@@ -80,44 +80,152 @@ This script will:
 - Add new capability to existing system
 - Create entirely new feature
 
-## Phase 2: Strategic Questioning (MANDATORY)
+## Phase 2: Strategic Questioning with Inferred Answers (FAST MODE)
 
-**⚠️ RESIST TIME PRESSURE:** Even if user says "ASAP", "urgent", or "quickly" - following this process prevents rework and saves time overall. Rushing leads to wrong solutions.
+**⚠️ OBJETIVO:** Acelerar o processo de discovery apresentando respostas INFERIDAS para validação rápida, em vez de perguntas abertas.
 
-Ask the user strategic questions following this structure. **Do NOT skip categories** - each one addresses critical aspects:
+### Como Funciona
 
-### 1. Scope & Objective
-- What is the main goal of this functionality?
-- Who are the users/systems that will interact with it?
-- What specific problem are we solving?
+1. **Analise o contexto** do pedido do usuário e do codebase
+2. **Infira as respostas mais prováveis** para cada pergunta estratégica
+3. **Apresente um questionário com opções pré-preenchidas** marcando a opção inferida com `[PROVÁVEL]`
+4. **Usuário valida rapidamente:**
+   - `Ok` ou `✓` = Todas as opções marcadas como PROVÁVEL estão corretas
+   - Correção específica = Usuário só informa o que está diferente
 
-### 2. Business Rules
-- Are there specific validations or restrictions?
-- How should error cases be handled?
-- Are there dependencies on other functionalities?
-- Are there limits, quotas, or throttling to consider?
+### Template do Questionário
 
-### 3. Data & Integration
-- What data needs to be persisted?
-- Are there external integrations (APIs, services)?
-- Are asynchronous processes necessary?
+Apresente TODAS as perguntas de uma vez com opções inferidas:
 
-### 4. Edge Cases & Failure Scenarios
-- What happens in failure scenarios?
-- How to handle legacy data or migrations?
-- Are there performance or scalability concerns?
-- Are there specific security considerations?
+```markdown
+## 📋 Validação Rápida - [Feature Name]
 
-### 5. UI/UX (if frontend applicable)
-- How should the user experience be?
-- Are there specific loading/error states?
-- Are there responsiveness requirements?
+Analisei seu pedido e inferi as respostas abaixo.
+**Responda "Ok" se tudo estiver correto, ou informe apenas as correções.**
 
-**IMPORTANT:**
-- Ask questions ONE CATEGORY AT A TIME
-- Wait for user responses before moving to next category
-- For each answer, ask follow-up questions if unclear
-- Continue until NO ambiguities remain
+---
+
+### 1. Escopo & Objetivo
+
+**1.1 Objetivo principal:**
+- a) [Opção inferida baseada no contexto]
+- b) [Alternativa plausível]
+- c) Outro: _______
+→ **[PROVÁVEL: a]**
+
+**1.2 Usuários/sistemas que interagem:**
+- a) Usuários finais autenticados
+- b) Sistemas externos via API
+- c) Administradores do sistema
+- d) Todos os anteriores
+→ **[PROVÁVEL: ?]** (inferir baseado no contexto)
+
+**1.3 Problema sendo resolvido:**
+→ **[INFERIDO]:** [Descrição do problema inferido]
+
+---
+
+### 2. Regras de Negócio
+
+**2.1 Validações necessárias:**
+→ **[INFERIDO]:** [Lista de validações inferidas]
+
+**2.2 Tratamento de erros:**
+- a) Retornar mensagem amigável ao usuário
+- b) Logar e falhar silenciosamente
+- c) Retry automático com backoff
+- d) Notificar administrador
+→ **[PROVÁVEL: a]**
+
+**2.3 Dependências de outras funcionalidades:**
+→ **[INFERIDO]:** [Listar dependências identificadas ou "Nenhuma identificada"]
+
+**2.4 Limites/quotas:**
+- a) Sem limites
+- b) Rate limiting por usuário
+- c) Quota por workspace/account
+→ **[PROVÁVEL: a]** (ajustar se contexto sugerir diferente)
+
+---
+
+### 3. Dados & Integração
+
+**3.1 Dados a persistir:**
+→ **[INFERIDO]:** [Listar entidades/campos inferidos]
+
+**3.2 Integrações externas:**
+- a) Nenhuma
+- b) [APIs identificadas no contexto]
+→ **[PROVÁVEL: ?]**
+
+**3.3 Processamento assíncrono:**
+- a) Não necessário (operação síncrona)
+- b) Sim, via fila (jobs background)
+- c) Sim, via eventos (event-driven)
+→ **[PROVÁVEL: ?]**
+
+---
+
+### 4. Edge Cases & Falhas
+
+**4.1 Cenários de falha:**
+→ **[INFERIDO]:** [Listar cenários identificados]
+
+**4.2 Dados legados/migração:**
+- a) Não aplicável (feature nova)
+- b) Requer migração de dados existentes
+→ **[PROVÁVEL: a]**
+
+**4.3 Considerações de performance:**
+- a) Volume baixo, sem preocupações
+- b) Volume médio, cache recomendado
+- c) Volume alto, requer otimização específica
+→ **[PROVÁVEL: a]**
+
+**4.4 Segurança:**
+→ **[INFERIDO]:** [Listar considerações ou "Padrão da aplicação (auth JWT + account isolation)"]
+
+---
+
+### 5. UI/UX (se aplicável)
+
+**5.1 Tipo de interface:**
+- a) Página nova
+- b) Componente em página existente
+- c) Modal/Dialog
+- d) Apenas API (sem frontend)
+→ **[PROVÁVEL: ?]**
+
+**5.2 Estados de loading/erro:**
+- a) Padrão do sistema (skeleton + toast)
+- b) Customizado para esta feature
+→ **[PROVÁVEL: a]**
+
+---
+
+**✅ Responda "Ok" para confirmar todas as inferências, ou liste apenas as correções.**
+```
+
+### Regras de Inferência
+
+**Base suas inferências em:**
+1. Descrição do usuário
+2. Padrões existentes no codebase (CLAUDE.md)
+3. Contexto do projeto (multi-tenant, CQRS, etc.)
+4. Bom senso técnico
+
+**Quando NÃO conseguir inferir:**
+- Marque como `[PRECISA RESPOSTA]` em vez de `[PROVÁVEL]`
+- Essas são as únicas perguntas que REALMENTE precisam de input
+
+### Processando a Resposta do Usuário
+
+**Se usuário responder:**
+- `Ok`, `✓`, `Confirmo`, `Está certo` → Todas as inferências estão corretas
+- `1.2: c`, `2.1: precisa validar email` → Aplicar apenas as correções mencionadas
+- Resposta mais longa → Extrair correções e aplicar
+
+**Após validação, prossiga imediatamente para Phase 3.**
 
 ## Phase 3: Documentation Completion (MANDATORY)
 

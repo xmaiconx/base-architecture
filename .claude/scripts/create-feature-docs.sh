@@ -377,11 +377,11 @@ cat > "${FEATURE_PATH}/discovery.md" << 'EOF'
 [What the Planning Agent should prioritize in the technical design]
 EOF
 
-# Replace placeholders with actual values
-sed -i "s/BRANCH_NAME/${NEW_BRANCH_NAME}/g" "${FEATURE_PATH}/about.md"
-sed -i "s/CURRENT_DATE/${CURRENT_DATE}/g" "${FEATURE_PATH}/about.md"
-sed -i "s/BRANCH_NAME/${NEW_BRANCH_NAME}/g" "${FEATURE_PATH}/discovery.md"
-sed -i "s/CURRENT_DATE/${CURRENT_DATE}/g" "${FEATURE_PATH}/discovery.md"
+# Replace placeholders with actual values (using | as delimiter to avoid conflicts with / in branch names)
+sed -i "s|BRANCH_NAME|${NEW_BRANCH_NAME}|g" "${FEATURE_PATH}/about.md"
+sed -i "s|CURRENT_DATE|${CURRENT_DATE}|g" "${FEATURE_PATH}/about.md"
+sed -i "s|BRANCH_NAME|${NEW_BRANCH_NAME}|g" "${FEATURE_PATH}/discovery.md"
+sed -i "s|CURRENT_DATE|${CURRENT_DATE}|g" "${FEATURE_PATH}/discovery.md"
 
 echo -e "${GREEN}✓ Created directory: ${FEATURE_PATH}${NC}"
 echo -e "${GREEN}✓ Created file: ${FEATURE_PATH}/about.md${NC}"
