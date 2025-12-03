@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { User, UserRole } from '@agentics/domain';
-import { IUserRepository } from '@agentics/database';
-import { ILoggerService, IConfigurationService } from '@agentics/backend';
+import { User, UserRole } from '@fnd/domain';
+import { IUserRepository } from '@fnd/database';
+import { ILoggerService, IConfigurationService } from '@fnd/backend';
 
 /**
  * Serviço responsável por elevar usuários ao role de SUPER_ADMIN

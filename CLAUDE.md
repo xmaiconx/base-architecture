@@ -1,4 +1,4 @@
-# Agentics - Development Guide
+# FND EasyFlow - Development Guide
 
 ## About
 
@@ -36,20 +36,20 @@ Template base para alunos do **Fábrica de Negócios Digitais (FND)** iniciarem 
 
 ### Estrutura do Monorepo
 ```
-agentics/
+fnd-easyflow-template/
 ├── apps/
-│   ├── backend/         # @agentics/api - NestJS API + Workers (DTOs in module folders)
-│   └── frontend/        # @agentics/frontend - React App (DTOs mirrored in types/)
+│   ├── backend/         # @fnd/api - NestJS API + Workers (DTOs in module folders)
+│   └── frontend/        # @fnd/frontend - React App (DTOs mirrored in types/)
 └── libs/
-    ├── domain/          # @agentics/domain - Domain entities, enums, types
-    ├── backend/         # @agentics/backend - Service interfaces
-    ├── app-database/    # @agentics/database - Data access (PostgreSQL, uses domain entities)
+    ├── domain/          # @fnd/domain - Domain entities, enums, types
+    ├── backend/         # @fnd/backend - Service interfaces
+    ├── app-database/    # @fnd/database - Data access (PostgreSQL, uses domain entities)
 ```
 
 ## 🔧 Convenções de Nomenclatura
 
 ### Código
-- **Packages**: `@agentics/[nome]`
+- **Packages**: `@fnd/[nome]`
 - **Interfaces**: `I[Nome]Service`, `I[Nome]Repository`
 - **DTOs**: `[Ação][Entidade]Dto` (ex: `CreateUserDto`)
 - **Commands**: `[Ação][Subject]Command` (ex: `SignUpCommand`)
@@ -84,7 +84,7 @@ export interface IUserRepository {
 }
 
 // ✅ CORRETO - IUserRepository using domain entities
-import { User } from '@agentics/domain';
+import { User } from '@fnd/domain';
 
 export interface IUserRepository {
   create(data: Omit<User, 'id' | 'createdAt'>): Promise<User>;  // Domain entities only
@@ -157,13 +157,13 @@ api/modules/[feature]/
 import { CreateUserDto, UserResponseDto } from './dtos';
 
 // Entities e Enums (package reference)
-import { User, UserRole } from '@agentics/domain';
+import { User, UserRole } from '@fnd/domain';
 
 // Repositories (package reference)
-import { IUserRepository } from '@agentics/database';
+import { IUserRepository } from '@fnd/database';
 
 // Infraestrutura (package reference)
-import { ILoggerService } from '@agentics/backend';
+import { ILoggerService } from '@fnd/backend';
 
 // Serviços compartilhados (relative path dentro do backend)
 import { EmailQueueService } from '../../shared/services/email-queue.service';
@@ -246,9 +246,9 @@ import { AccountCreatedEvent } from './events';
 - **Global Handlers**: AuditEventListener escuta todos os eventos para auditoria
 
 ### 3. Repository Pattern
-- **Interface**: `I[Entity]Repository` (@agentics/database)
+- **Interface**: `I[Entity]Repository` (@fnd/database)
 - **Implementation**: `[Entity]Repository` (Kysely)
-- **Retorna**: Domain entities (@agentics/domain)
+- **Retorna**: Domain entities (@fnd/domain)
 
 ### 4. Pipeline Pattern
 **Arquivo**: `apps/backend/src/shared/messages/pipeline/`
@@ -508,7 +508,7 @@ apps/frontend/src/
 - ✅ **KISS**: Keep It Simple, Stupid
 - ✅ **YAGNI**: You Aren't Gonna Need It
 - ✅ Logs estruturados (Winston) com contexto
-- ✅ Usar package references (`@agentics/*`) para libs
+- ✅ Usar package references (`@fnd/*`) para libs
 - ✅ Relative imports para módulo local e shared services
 
 ### Exports
@@ -560,11 +560,25 @@ context.executionHistory.push({
 ## 🏛️ Configuration Best Practices
 
 ### IConfigurationService Pattern
-Always inject `IConfigurationService` interface, never `ConfigService` directly from NestJS. This ensures type-safe methods, testability, and centralized configuration logic with defaults.
+**NUNCA usar `process.env` diretamente.** Sempre injetar `IConfigurationService`.
 
+```typescript
+// ❌ ERRADO - process.env direto
+const apiKey = process.env.STRIPE_SECRET_KEY;
+
+// ❌ ERRADO - ConfigService do NestJS
+constructor(private configService: ConfigService) {}
+
+// ✅ CORRETO - IConfigurationService
+constructor(
+  @Inject('IConfigurationService')
+  private readonly config: IConfigurationService
+) {}
+const apiKey = this.config.getStripeSecretKey();
+```
+
+**Interface**: `libs/backend/src/services/IConfigurationService.ts`
 **Implementation**: `apps/backend/src/shared/services/configuration.service.ts`
-
-**Example**: Use `configurationService.getApiBaseUrl()` instead of `configService.get('API_BASE_URL')`.
 
 ## 🔑 Key Files
 

@@ -1,6 +1,6 @@
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField, LoadingButton } from '@/components/forms';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
@@ -28,7 +28,6 @@ const resetPasswordSchema = z.object({
 type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
 export function ResetPasswordPage() {
-  const navigate = useNavigate();
   const { resetPassword } = useSupabaseAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailSent, setEmailSent] = useState(false);

@@ -3,8 +3,8 @@ import {
   ILoggerService,
   IMessagePipelineStep,
   IMessageBufferService,
-} from '@agentics/backend';
-import { MessageContext, PipelineResult } from '@agentics/domain';
+} from '@fnd/backend';
+import { MessageContext, PipelineResult } from '@fnd/domain';
 
 /**
  * Clear Buffer Step (Generic)

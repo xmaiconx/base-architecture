@@ -1,4 +1,4 @@
-import { WebhookEvent, WebhookStatus } from '@agentics/domain';
+import { WebhookEvent, WebhookStatus } from '@fnd/domain';
 
 /**
  * DTO para criar um webhook event (omitindo campos gerados)

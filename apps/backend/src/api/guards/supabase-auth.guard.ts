@@ -6,8 +6,8 @@ import {
   Inject,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { ISupabaseService, ILoggerService } from '@agentics/backend';
-import { IUserRepository } from '@agentics/database';
+import { ISupabaseService, ILoggerService } from '@fnd/backend';
+import { IUserRepository } from '@fnd/database';
 import { RoleElevationService } from '../modules/auth/services/role-elevation.service';
 
 /**

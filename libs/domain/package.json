@@ -1,5 +1,5 @@
 {
-  "name": "@agentics/domain",
+  "name": "@fnd/domain",
   "version": "1.0.0",
   "description": "Pure domain models and enums",
   "main": "dist/index.js",

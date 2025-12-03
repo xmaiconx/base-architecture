@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { Workspace, EntityStatus, OnboardingStatus } from '@agentics/domain';
+import { Workspace, EntityStatus, OnboardingStatus } from '@fnd/domain';
 import { Database } from '../types';
 import { IWorkspaceRepository } from '../interfaces';
 

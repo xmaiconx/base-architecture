@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Headers, BadRequestException, Inject } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ISupabaseService, ILoggerService } from '@agentics/backend';
+import { ISupabaseService, ILoggerService } from '@fnd/backend';
 import { CompleteSignUpCommand } from './commands/CompleteSignUpCommand';
 
 /**

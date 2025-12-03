@@ -3,8 +3,8 @@ import {
   IMessageBufferService,
   IConfigurationService,
   ILoggerService,
-} from '@agentics/backend';
-import { TypedMessage } from '@agentics/domain';
+} from '@fnd/backend';
+import { TypedMessage } from '@fnd/domain';
 import { Queue, Job } from 'bullmq';
 import Redis from 'ioredis';
 

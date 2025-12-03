@@ -2,8 +2,8 @@ import { CommandHandler, ICommandHandler, CommandBus } from '@nestjs/cqrs';
 import { Inject, Injectable } from '@nestjs/common';
 import { SyncAuthUserCommand } from '../SyncAuthUserCommand';
 import { CompleteSignUpCommand } from '../CompleteSignUpCommand';
-import { IUserRepository } from '@agentics/database';
-import { ILoggerService } from '@agentics/backend';
+import { IUserRepository } from '@fnd/database';
+import { ILoggerService } from '@fnd/backend';
 
 /**
  * SyncAuthUserCommandHandler

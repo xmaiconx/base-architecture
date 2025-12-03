@@ -5,9 +5,9 @@ import {
   IWorkspaceUserRepository,
   IPlanRepository,
   ISubscriptionRepository,
-} from '@agentics/database';
-import { IStripeService, IConfigurationService } from '@agentics/backend';
-import { UserRole } from '@agentics/domain';
+} from '@fnd/database';
+import { IStripeService, IConfigurationService } from '@fnd/backend';
+import { UserRole } from '@fnd/domain';
 import { PlanService } from './plan.service';
 import {
   BillingInfoResponseDto,

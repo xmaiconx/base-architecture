@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IEmailService } from '@agentics/backend';
-import { IConfigurationService } from '@agentics/backend';
+import { IEmailService } from '@fnd/backend';
+import { IConfigurationService } from '@fnd/backend';
 import { Resend } from 'resend';
 
 @Injectable()

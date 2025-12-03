@@ -9,7 +9,7 @@ import {
   MessageRepository,
   ProjectRepository,
   WebhookEventRepository,
-} from '@agentics/database';
+} from '@fnd/database';
 
 // Existing workers
 import { EmailWorker } from './email.worker';

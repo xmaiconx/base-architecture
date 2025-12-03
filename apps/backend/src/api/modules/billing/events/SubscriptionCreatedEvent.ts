@@ -1,4 +1,4 @@
-import { IDomainEvent } from '@agentics/backend';
+import { IDomainEvent } from '@fnd/backend';
 
 export class SubscriptionCreatedEvent implements IDomainEvent {
   readonly type = 'subscription.created';

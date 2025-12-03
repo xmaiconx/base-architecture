@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException, ForbiddenException, Inject } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
-import { Workspace, WorkspaceUser, EntityStatus, OnboardingStatus } from '@agentics/domain';
+import { Workspace, WorkspaceUser, EntityStatus, OnboardingStatus } from '@fnd/domain';
 import { WorkspaceCreatedEvent, UserAddedToWorkspaceEvent } from './events';
-import { IWorkspaceRepository, IWorkspaceUserRepository } from '@agentics/database';
-import { ILoggerService } from '@agentics/backend';
+import { IWorkspaceRepository, IWorkspaceUserRepository } from '@fnd/database';
+import { ILoggerService } from '@fnd/backend';
 
 @Injectable()
 export class WorkspaceService {

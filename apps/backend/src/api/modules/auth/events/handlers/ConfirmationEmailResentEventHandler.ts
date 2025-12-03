@@ -1,8 +1,8 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { ConfirmationEmailResentEvent } from '../ConfirmationEmailResentEvent';
-import { IEmailQueueService } from '@agentics/backend';
-import { ILoggerService, IConfigurationService } from '@agentics/backend';
+import { IEmailQueueService } from '@fnd/backend';
+import { ILoggerService, IConfigurationService } from '@fnd/backend';
 
 @EventsHandler(ConfirmationEmailResentEvent)
 export class ConfirmationEmailResentEventHandler implements IEventHandler<ConfirmationEmailResentEvent> {

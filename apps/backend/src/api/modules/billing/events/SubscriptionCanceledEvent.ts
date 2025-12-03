@@ -1,4 +1,4 @@
-import { IDomainEvent } from '@agentics/backend';
+import { IDomainEvent } from '@fnd/backend';
 
 export class SubscriptionCanceledEvent implements IDomainEvent {
   readonly type = 'subscription.canceled';

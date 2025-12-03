@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IWebhookParser, ILoggerService } from '@agentics/backend';
+import { IWebhookParser, ILoggerService } from '@fnd/backend';
 import { ParserConfig } from '../types/ParserConfig';
 import {
   WhaticketWhatsappBaileysParser,

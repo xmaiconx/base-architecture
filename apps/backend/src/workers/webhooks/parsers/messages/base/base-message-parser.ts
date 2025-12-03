@@ -4,14 +4,14 @@ import {
   ParsedWebhookData,
   WebhookEventContext,
   ParseResult,
-} from '@agentics/backend';
+} from '@fnd/backend';
 import {
   MessageContext,
   TypedMessage,
   ChatChannel,
   ChatProvider,
   ChatImplementation,
-} from '@agentics/domain';
+} from '@fnd/domain';
 
 /**
  * Base Message Parser

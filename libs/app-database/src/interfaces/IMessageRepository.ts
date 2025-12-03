@@ -1,4 +1,4 @@
-import { TypedMessage, CreateMessagePayload } from '@agentics/domain';
+import { TypedMessage, CreateMessagePayload } from '@fnd/domain';
 
 /**
  * Message Repository Interface

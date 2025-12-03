@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { WebhookEvent, WebhookStatus, WebhookType } from '@agentics/domain';
+import { WebhookEvent, WebhookStatus, WebhookType } from '@fnd/domain';
 import { Database } from '../types';
 import {
   IWebhookEventRepository,

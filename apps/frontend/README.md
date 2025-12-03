@@ -1,6 +1,6 @@
-# TinyCE Frontend
+# FND EasyFlow Frontend
 
-Frontend React para o sistema TinyCE.
+Frontend React para o template FND EasyFlow.
 
 ## 🚀 Stack Tecnológica
 
@@ -110,4 +110,4 @@ Configurada via Axios com interceptors:
 - **Base URL**: Configurável por ambiente
 - **Auth headers**: Automático via token
 - **Error handling**: Interceptors globais
-- **Types**: Compartilhados com backend via @agentics/shared
+- **Types**: Espelhados do backend em types/api/ (frontend 100% desacoplado)

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ParsedWebhookData } from '@agentics/backend';
+import { ParsedWebhookData } from '@fnd/backend';
 import { BaseWebhookParser } from '../base/base-webhook-parser';
 
 /**

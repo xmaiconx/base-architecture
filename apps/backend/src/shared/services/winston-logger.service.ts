@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ILoggerService, LogContext } from '@agentics/backend';
+import { ILoggerService, LogContext } from '@fnd/backend';
 import * as winston from 'winston';
 
 @Injectable()

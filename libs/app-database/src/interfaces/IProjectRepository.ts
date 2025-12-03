@@ -1,4 +1,4 @@
-import { Project, ProjectSettings, ProjectStatus } from '@agentics/domain';
+import { Project, ProjectSettings, ProjectStatus } from '@fnd/domain';
 
 /**
  * Project Repository Interface

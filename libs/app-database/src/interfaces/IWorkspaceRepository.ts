@@ -1,4 +1,4 @@
-import { Workspace } from '@agentics/domain';
+import { Workspace } from '@fnd/domain';
 
 export interface IWorkspaceRepository {
   create(data: Omit<Workspace, 'id' | 'createdAt' | 'updatedAt'>): Promise<Workspace>;

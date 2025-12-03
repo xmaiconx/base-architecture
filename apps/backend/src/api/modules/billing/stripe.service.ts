@@ -4,8 +4,8 @@ import {
   IStripeService,
   StripeCheckoutSession,
   StripePortalSession,
-} from '@agentics/backend';
-import { IConfigurationService } from '@agentics/backend';
+} from '@fnd/backend';
+import { IConfigurationService } from '@fnd/backend';
 
 @Injectable()
 export class StripeService implements IStripeService {

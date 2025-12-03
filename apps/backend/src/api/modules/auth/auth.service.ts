@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 import { UserResponseDto } from './dtos';
-import { IUserRepository } from '@agentics/database';
-import { ILoggerService, ISupabaseService } from '@agentics/backend';
+import { IUserRepository } from '@fnd/database';
+import { ILoggerService, ISupabaseService } from '@fnd/backend';
 
 /**
  * AuthService (Adapted for Supabase Auth)

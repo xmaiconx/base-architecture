@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ILoggerService, IMessagePipelineStep } from '@agentics/backend';
+import { ILoggerService, IMessagePipelineStep } from '@fnd/backend';
 import {
   AudioMessage,
   ImageMessage,
@@ -7,7 +7,7 @@ import {
   MessageType,
   PipelineResult,
   VideoMessage,
-} from '@agentics/domain';
+} from '@fnd/domain';
 
 /**
  * Convert Media to Text Step

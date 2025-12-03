@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IMessagePipelineStep, IPipelineStepRegistry } from '@agentics/backend';
+import { IMessagePipelineStep, IPipelineStepRegistry } from '@fnd/backend';
 
 /**
  * Pipeline Step Registry

@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { ILoggerService, IConfigurationService } from '@agentics/backend';
+import { ILoggerService, IConfigurationService } from '@fnd/backend';
 
 /**
  * Serviço responsável por logar informações importantes durante o startup da aplicação.

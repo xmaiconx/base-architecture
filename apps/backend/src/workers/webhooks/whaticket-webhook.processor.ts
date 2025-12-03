@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
-import { ILoggerService, IJobQueue } from '@agentics/backend';
-import { IWebhookEventRepository } from '@agentics/database';
+import { ILoggerService, IJobQueue } from '@fnd/backend';
+import { IWebhookEventRepository } from '@fnd/database';
 import { BaseWebhookProcessor } from './base-webhook.processor';
 import { WebhookParserFactoryService } from './parsers/webhook-parser-factory.service';
 import { MessageParserFactoryService } from './parsers/messages/message-parser-factory.service';

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { Account } from '@agentics/domain';
+import { Account } from '@fnd/domain';
 import { Database } from '../types';
 import { IAccountRepository } from '../interfaces';
 

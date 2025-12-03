@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import type { Workspace } from '@agentics/domain'
+import type { Workspace } from '@/types/domain/entities'
 
 export interface User {
   id: string
@@ -70,7 +70,7 @@ export const useAuthStore = create<AuthState>()(
         })),
     }),
     {
-      name: 'tinyce-auth',
+      name: 'fnd-easyflow-auth',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,

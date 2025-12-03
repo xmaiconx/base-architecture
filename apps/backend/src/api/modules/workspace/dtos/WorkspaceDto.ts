@@ -1,4 +1,4 @@
-import type { EntityStatus, OnboardingStatus } from '@agentics/domain';
+import type { EntityStatus, OnboardingStatus } from '@fnd/domain';
 
 export interface CreateWorkspaceDto {
   accountId: string;

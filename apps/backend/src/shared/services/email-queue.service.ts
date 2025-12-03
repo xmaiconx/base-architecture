@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IEmailQueueService, SendEmailCommand, SendEmailTemplateCommand, QUEUE_COMMANDS } from '@agentics/backend';
-import { IJobQueue, ILoggerService } from '@agentics/backend';
+import { IEmailQueueService, SendEmailCommand, SendEmailTemplateCommand, QUEUE_COMMANDS } from '@fnd/backend';
+import { IJobQueue, ILoggerService } from '@fnd/backend';
 
 @Injectable()
 export class EmailQueueService implements IEmailQueueService {

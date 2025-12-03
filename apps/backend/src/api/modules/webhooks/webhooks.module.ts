@@ -4,7 +4,7 @@ import { SharedModule } from '../../../shared/shared.module';
 import {
   IWebhookEventRepository,
   WebhookEventRepository,
-} from '@agentics/database';
+} from '@fnd/database';
 import { WebhooksController } from './webhooks.controller';
 import { WebhooksService } from './webhooks.service';
 import { WebhookGatewayService } from './services/webhook-gateway.service';

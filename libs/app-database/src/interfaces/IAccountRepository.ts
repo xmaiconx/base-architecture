@@ -1,4 +1,4 @@
-import { Account } from '@agentics/domain';
+import { Account } from '@fnd/domain';
 
 export interface IAccountRepository {
   findById(id: string): Promise<Account | null>;

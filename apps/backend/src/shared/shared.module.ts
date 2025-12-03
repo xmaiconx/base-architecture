@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
-import { ILoggerService, IJobQueue, IScheduleService, IEventBroker, IConfigurationService, IMessageBufferService, ISupabaseService } from '@agentics/backend';
-import { IEmailService } from '@agentics/backend';
-import { IEmailQueueService } from '@agentics/backend';
+import { ILoggerService, IJobQueue, IScheduleService, IEventBroker, IConfigurationService, IMessageBufferService, ISupabaseService } from '@fnd/backend';
+import { IEmailService } from '@fnd/backend';
+import { IEmailQueueService } from '@fnd/backend';
 import {
   IUserRepository,
   IAccountRepository,
@@ -20,7 +20,7 @@ import {
   PlanRepository,
   SubscriptionRepository,
   createDatabase
-} from '@agentics/database';
+} from '@fnd/database';
 import { ResendEmailService } from './services/resend-email.service';
 import { WinstonLoggerService } from './services/winston-logger.service';
 import { RedisJobQueueService } from './services/redis-job-queue.service';

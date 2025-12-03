@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { WorkspaceUser } from '@agentics/domain';
+import { WorkspaceUser } from '@fnd/domain';
 import { Database } from '../types';
 import { IWorkspaceUserRepository } from '../interfaces';
 

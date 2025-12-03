@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { Subscription } from '@agentics/domain';
+import { Subscription } from '@fnd/domain';
 import { Database, SubscriptionTable } from '../types';
 import { ISubscriptionRepository } from '../interfaces';
 

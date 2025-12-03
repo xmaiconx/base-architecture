@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ILoggerService, IMessagePipelineStep } from '@agentics/backend';
+import { ILoggerService, IMessagePipelineStep } from '@fnd/backend';
 import {
   MessageContext,
   MessageType,
   PipelineResult,
   TextMessage,
-} from '@agentics/domain';
+} from '@fnd/domain';
 
 /**
  * Check Command Step

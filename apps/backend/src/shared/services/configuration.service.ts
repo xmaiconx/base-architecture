@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IConfigurationService, IFeatureFlags } from '@agentics/backend';
+import { IConfigurationService, IFeatureFlags } from '@fnd/backend';
 
 @Injectable()
 export class ConfigurationService implements IConfigurationService {

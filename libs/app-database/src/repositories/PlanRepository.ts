@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { Plan } from '@agentics/domain';
+import { Plan } from '@fnd/domain';
 import { Database, PlanTable } from '../types';
 import { IPlanRepository } from '../interfaces';
 

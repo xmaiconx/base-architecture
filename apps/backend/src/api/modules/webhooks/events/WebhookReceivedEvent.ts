@@ -1,5 +1,5 @@
 import { BaseEvent } from '../../../../shared/base';
-import { WebhookType } from '@agentics/domain';
+import { WebhookType } from '@fnd/domain';
 
 export interface WebhookReceivedEventData {
   webhookEventId: string;

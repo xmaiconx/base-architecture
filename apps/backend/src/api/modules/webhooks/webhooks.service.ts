@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { ILoggerService, IEventBroker } from '@agentics/backend';
-import { IWebhookEventRepository } from '@agentics/database';
-import { WebhookStatus } from '@agentics/domain';
+import { ILoggerService, IEventBroker } from '@fnd/backend';
+import { IWebhookEventRepository } from '@fnd/database';
+import { WebhookStatus } from '@fnd/domain';
 import { WebhookGatewayService } from './services/webhook-gateway.service';
 import { WebhookReceivedEvent } from './events/WebhookReceivedEvent';
 

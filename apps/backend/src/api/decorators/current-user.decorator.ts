@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { User } from '@agentics/domain';
+import { User } from '@fnd/domain';
 
 /**
  * Decorator para extrair o usuário autenticado da requisição.

@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
-import { ISupabaseService, SupabaseUser, IConfigurationService, ILoggerService } from '@agentics/backend';
+import { ISupabaseService, SupabaseUser, IConfigurationService, ILoggerService } from '@fnd/backend';
 import * as crypto from 'crypto';
 
 /**

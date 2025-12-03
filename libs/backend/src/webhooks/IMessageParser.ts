@@ -1,4 +1,4 @@
-import { MessageContext } from '@agentics/domain';
+import { MessageContext } from '@fnd/domain';
 import { ParseResult } from './ParseResult';
 import { ParsedWebhookData } from './IWebhookParser';
 

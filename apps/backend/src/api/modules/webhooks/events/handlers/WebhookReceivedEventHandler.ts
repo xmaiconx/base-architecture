@@ -1,8 +1,8 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { ILoggerService, IJobQueue } from '@agentics/backend';
-import { IWebhookEventRepository } from '@agentics/database';
-import { WebhookStatus } from '@agentics/domain';
+import { ILoggerService, IJobQueue } from '@fnd/backend';
+import { IWebhookEventRepository } from '@fnd/database';
+import { WebhookStatus } from '@fnd/domain';
 import { WebhookReceivedEvent } from '../WebhookReceivedEvent';
 
 /**

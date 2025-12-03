@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ISubscriptionRepository, IPlanRepository } from '@agentics/database';
-import { IStripeService, ILoggerService } from '@agentics/backend';
+import { ISubscriptionRepository, IPlanRepository } from '@fnd/database';
+import { IStripeService, ILoggerService } from '@fnd/backend';
 
 @Injectable()
 export class StripeWebhookService {

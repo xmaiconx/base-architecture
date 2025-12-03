@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext, NotFoundException, Inject } from '@nestjs/common';
-import { IConfigurationService } from '@agentics/backend';
+import { IConfigurationService } from '@fnd/backend';
 
 /**
  * Guard que verifica se a funcionalidade de workspace está habilitada.

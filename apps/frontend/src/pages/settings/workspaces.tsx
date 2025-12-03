@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Plus, Settings, Archive, Loader2, RotateCcw } from 'lucide-react'
 import { useWorkspace } from '@/hooks/use-workspace'
 import { CreateWorkspaceModal } from '@/components/workspace'
-import type { Workspace } from '@agentics/domain'
+import type { Workspace } from '@/types/domain/entities'
 import { ROUTES } from '@/lib/constants'
 
 export function WorkspacesPage() {

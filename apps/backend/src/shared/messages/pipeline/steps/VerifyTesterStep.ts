@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ILoggerService, IMessagePipelineStep } from '@agentics/backend';
-import { MessageContext, PipelineResult, ProjectStatus } from '@agentics/domain';
+import { ILoggerService, IMessagePipelineStep } from '@fnd/backend';
+import { MessageContext, PipelineResult, ProjectStatus } from '@fnd/domain';
 
 /**
  * Verify Tester Step

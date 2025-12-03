@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { ILoggerService } from '@agentics/backend';
+import { ILoggerService } from '@fnd/backend';
 import { Inject } from '@nestjs/common';
-import { WebhookGatewayConfig } from '@agentics/domain';
+import { WebhookGatewayConfig } from '@fnd/domain';
 
 /**
  * Serviço responsável por decodificar e validar UUID do gateway webhook

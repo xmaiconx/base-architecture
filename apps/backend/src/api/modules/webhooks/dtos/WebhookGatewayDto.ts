@@ -1,4 +1,4 @@
-import { WebhookType } from '@agentics/domain';
+import { WebhookType } from '@fnd/domain';
 
 /**
  * DTO representando os dados decodificados do UUID do gateway

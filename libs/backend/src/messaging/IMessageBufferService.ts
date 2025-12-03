@@ -1,4 +1,4 @@
-import { TypedMessage } from '@agentics/domain';
+import { TypedMessage } from '@fnd/domain';
 
 /**
  * Message Buffer Service Interface

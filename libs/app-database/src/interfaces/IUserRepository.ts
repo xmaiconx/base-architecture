@@ -1,4 +1,4 @@
-import { User } from '@agentics/domain';
+import { User } from '@fnd/domain';
 
 export interface IUserRepository {
   findById(id: string): Promise<User | null>;

@@ -1,7 +1,7 @@
 {
-  "name": "tinyce",
+  "name": "fnd-easyflow-template",
   "version": "1.0.0",
-  "description": "Sistema de Gestão para Terapeutas Autônomos",
+  "description": "Template base para alunos FND construírem SaaS com IA",
   "private": true,
   "packageManager": "npm@9.0.0",
   "workspaces": [

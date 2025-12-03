@@ -1,10 +1,10 @@
 /**
  * Domain Entities - Frontend Types
- * Mirrored from @agentics/domain
+ * Mirrored from @fnd/domain
  */
 
 // Entity Status Enum
-export type EntityStatus = 'active' | 'inactive' | 'suspended';
+export type EntityStatus = 'active' | 'inactive' | 'suspended' | 'archived';
 
 // Onboarding Status Enum
 export type OnboardingStatus = 'not_started' | 'in_progress' | 'completed' | 'skipped';

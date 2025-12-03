@@ -1,5 +1,5 @@
-export const APP_NAME = 'TinyCE'
-export const APP_DESCRIPTION = 'Sistema de Gestão para Terapeutas Autônomos'
+export const APP_NAME = 'FND EasyFlow'
+export const APP_DESCRIPTION = 'Template base para alunos FND construírem SaaS com IA'
 
 export const ROUTES = {
   HOME: '/',
@@ -30,8 +30,8 @@ export const API_ENDPOINTS = {
 } as const
 
 export const STORAGE_KEYS = {
-  AUTH: 'tinyce-auth',
-  THEME: 'tinyce-theme',
+  AUTH: 'fnd-easyflow-auth',
+  THEME: 'fnd-easyflow-theme',
 } as const
 
 export const QUERY_KEYS = {

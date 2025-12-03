@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IJobQueue, JobOptions, IConfigurationService } from '@agentics/backend';
+import { IJobQueue, JobOptions, IConfigurationService } from '@fnd/backend';
 import { Queue, Worker, Job } from 'bullmq';
 import Redis from 'ioredis';
 

@@ -7,7 +7,7 @@ import {
   MessageDirection,
   MessageStatus,
   MessageType,
-} from '@agentics/domain';
+} from '@fnd/domain';
 
 /**
  * Message Protocol Validation Schemas

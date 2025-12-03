@@ -1,4 +1,4 @@
-import { ICommand } from '@agentics/backend';
+import { ICommand } from '@fnd/backend';
 
 /**
  * SyncAuthUserCommand

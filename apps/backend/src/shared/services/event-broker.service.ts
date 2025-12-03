@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
-import { IEventBroker, ILoggerService } from '@agentics/backend';
-import { IEvent } from '@agentics/backend';
+import { IEventBroker, ILoggerService } from '@fnd/backend';
+import { IEvent } from '@fnd/backend';
 
 @Injectable()
 export class EventBrokerService implements IEventBroker {

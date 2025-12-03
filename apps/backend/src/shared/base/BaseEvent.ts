@@ -1,4 +1,4 @@
-import { IEvent } from '@agentics/backend';
+import { IEvent } from '@fnd/backend';
 
 export abstract class BaseEvent implements IEvent {
   public readonly occurredAt: Date;

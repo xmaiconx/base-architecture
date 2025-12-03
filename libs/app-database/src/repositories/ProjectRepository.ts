@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { Project, ProjectStatus } from '@agentics/domain';
+import { Project, ProjectStatus } from '@fnd/domain';
 import { Database } from '../types';
 import {
   IProjectRepository,

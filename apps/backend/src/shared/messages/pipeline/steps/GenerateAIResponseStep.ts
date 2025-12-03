@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ILoggerService, IMessagePipelineStep } from '@agentics/backend';
-import { MessageContext, MessageType, PipelineResult } from '@agentics/domain';
+import { ILoggerService, IMessagePipelineStep } from '@fnd/backend';
+import { MessageContext, MessageType, PipelineResult } from '@fnd/domain';
 
 /**
  * Generate AI Response Step

@@ -1,7 +1,7 @@
 {
-  "name": "@agentics/frontend",
+  "name": "@fnd/frontend",
   "version": "1.0.0",
-  "description": "Frontend for TinyCE",
+  "description": "Frontend para FND EasyFlow Template",
   "type": "module",
   "scripts": {
     "build": "vite build",

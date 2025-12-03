@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuditService } from './audit.service';
 import { AuditController } from './audit.controller';
-import { AuditLogRepository } from '@agentics/database';
+import { AuditLogRepository } from '@fnd/database';
 import { SharedModule } from '../../../shared/shared.module';
 
 @Module({

@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
 import { EventBus, IEvent } from '@nestjs/cqrs';
-import { IJobQueue, ILoggerService } from '@agentics/backend';
-import { QUEUE_COMMANDS } from '@agentics/backend';
+import { IJobQueue, ILoggerService } from '@fnd/backend';
+import { QUEUE_COMMANDS } from '@fnd/backend';
 
 @Injectable()
 export class AuditEventListener implements OnModuleInit {

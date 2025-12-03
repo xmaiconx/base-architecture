@@ -1,4 +1,4 @@
-import { Plan } from '@agentics/domain';
+import { Plan } from '@fnd/domain';
 
 export interface IPlanRepository {
   findAll(): Promise<Plan[]>;

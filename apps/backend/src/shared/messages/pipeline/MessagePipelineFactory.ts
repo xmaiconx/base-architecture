@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ILoggerService, IMessagePipeline } from '@agentics/backend';
+import { ILoggerService, IMessagePipeline } from '@fnd/backend';
 import { MessagePipeline } from './MessagePipeline';
 import { PipelineStepRegistry } from './PipelineStepRegistry';
 

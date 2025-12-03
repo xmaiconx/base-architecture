@@ -1,4 +1,4 @@
-import { IWebhookParser, ParsedWebhookData } from '@agentics/backend';
+import { IWebhookParser, ParsedWebhookData } from '@fnd/backend';
 
 /**
  * Classe base abstrata para parsers de webhook

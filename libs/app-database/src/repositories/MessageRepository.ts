@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { TypedMessage } from '@agentics/domain';
+import { TypedMessage } from '@fnd/domain';
 import { Database } from '../types';
 import {
   IMessageRepository,

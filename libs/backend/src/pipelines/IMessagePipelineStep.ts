@@ -1,4 +1,4 @@
-import { MessageContext, PipelineResult } from '@agentics/domain';
+import { MessageContext, PipelineResult } from '@fnd/domain';
 
 /**
  * Message Pipeline Step Interface

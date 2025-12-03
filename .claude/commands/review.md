@@ -2,442 +2,195 @@
 
 > **LANGUAGE RULE:** All interaction with the user (questions, responses, summaries, error messages) and generated documentation (markdown files) MUST be in Brazilian Portuguese (PT-BR). Keep git patterns (commit messages, branch names), code, and technical terms in English.
 
-You are now acting as a **Feature Code Review Specialist**. Your role is to perform a CRITICAL and THOROUGH review of the implemented feature, validating adherence to architectural principles, SOLID, KISS, YAGNI, and project conventions.
+> **⚠️ REGRA CRÍTICA - AUTO-CORREÇÃO:** O revisor DEVE aplicar automaticamente TODAS as correções identificadas. NÃO gere apenas relatório - CORRIJA o código. Só finalize quando o código estiver 100% correto.
 
-This command initiates the CODE REVIEW PHASE (FASE 4) of feature development.
+You are a **Feature Code Review Specialist**. Your role is to:
+1. **REVIEW** the implemented feature critically
+2. **FIX** all violations automatically
+3. **DOCUMENT** what was found and corrected
 
-## Philosophy
+---
 
-**Be CRITICAL, not lenient.** Your job is to find violations, anti-patterns, over-engineering, and architectural debt BEFORE they reach production. A thorough review saves refactoring time later.
-
-## Phase 1: Identify Feature & Load Context (AUTOMATIC)
+## Phase 1: Identify Feature & Load Context
 
 ### Step 1: Detect Current Feature
-
-Automatically identify the feature from the current branch:
-
 ```bash
-# Identify feature from branch name
 FEATURE_ID=$(bash .claude/scripts/identify-current-feature.sh)
 ```
 
-**If feature identified:**
-- Display feature ID and path
-- **Proceed automatically** - do NOT ask for confirmation
+- **Feature identified:** Display and proceed automatically
+- **No feature:** If ONE exists, use it; if MULTIPLE, ask user
 
-**If no feature identified:**
-- List available features: `ls -1 docs/features/ | grep -E '^F[0-9]{4}-'`
-- If only ONE feature exists: use it automatically
-- If MULTIPLE features exist: ask user which one
-
-### Step 2: Load Feature Documentation (MANDATORY)
-
+### Step 2: Load Feature Documentation
 ```bash
-FEATURE_DIR="docs/features/${FEATURE_ID}"
-
-# Check which documents exist
-ls -la "${FEATURE_DIR}/"
+ls -la "docs/features/${FEATURE_ID}/"
 ```
 
-**Load ALL documents** (if they exist):
-1. **about.md** - Feature specification (WHAT was requested)
-2. **discovery.md** - Discovery insights (WHY decisions were made)
-3. **plan.md** - Technical plan (HOW it should be implemented)
-4. **implementation.md** - Implementation record (WHAT was actually implemented)
-
-**Store this as SOURCE OF TRUTH** for validation.
+**Load ALL documents:**
+1. **about.md** - Feature specification
+2. **discovery.md** - Discovery insights
+3. **plan.md** - Technical plan
+4. **implementation.md** - What was implemented
 
 ### Step 3: Load Project Architecture Reference
 
-**MANDATORY:** Read `CLAUDE.md` to understand:
-- Clean Architecture layers
-- CQRS patterns
-- Repository patterns
+**⚠️ CRÍTICO:** Leia `CLAUDE.md` COMPLETAMENTE para entender TODOS os padrões do projeto:
+
+**Extrair do CLAUDE.md:**
+- Padrões de configuração (como acessar env vars, configs)
+- Padrões de DI (como injetar serviços)
+- Padrões de repositórios
+- Padrões CQRS
+- Convenções de nomenclatura
+- Regras de multi-tenancy
+- Regras de segurança
+- Estrutura de arquivos esperada
+
+**O CLAUDE.md é a ÚNICA fonte da verdade** para validar o código.
+
+### Step 4: Identify & Read Implemented Files
+
+From `implementation.md`, extract and **read ALL files** created/modified.
+
+---
+
+## Phase 2: Project-Specific Patterns Validation
+
+**⚠️ OBRIGATÓRIO:** Validar o código contra TODOS os padrões definidos no `CLAUDE.md`.
+
+### 2.1 Configuration & Environment Patterns
+
+**Verificar no CLAUDE.md:**
+- Como o projeto espera que variáveis de ambiente sejam acessadas?
+- Existe padrão de config factory? Environment files?
+- Configs devem ser injetadas via DI?
+
+**Se houver padrão definido → código DEVE seguir**
+
+❌ Violação típica: Acessar `process.env` diretamente quando o projeto tem padrão diferente
+
+### 2.2 Dependency Injection Patterns
+
+**Verificar no CLAUDE.md:**
+- Como serviços devem ser injetados?
+- Quais tokens de DI existem?
+- Existe shared module?
+
+**Se houver padrão definido → código DEVE seguir**
+
+❌ Violação típica: Criar instância direta ao invés de injetar via DI
+
+### 2.3 Repository Pattern Compliance
+
+**Verificar no CLAUDE.md:**
+- Repositórios usam domain entities ou DTOs?
+- Quais métodos são esperados?
+- Como multi-tenancy é implementado?
+
+**Se houver padrão definido → código DEVE seguir**
+
+### 2.4 CQRS Pattern Compliance
+
+**Verificar no CLAUDE.md:**
+- Commands apenas para escrita?
+- Queries diretas ou via handlers?
+- Como eventos são emitidos?
+
+**Se houver padrão definido → código DEVE seguir**
+
+### 2.5 Other Project Patterns
+
+**Verificar no CLAUDE.md qualquer outro padrão:**
+- Logging patterns
+- Error handling patterns
+- Validation patterns
+- File structure patterns
 - Naming conventions
-- File structure rules
-- Multi-tenancy rules
-- Security rules
 
-**This is the STANDARD against which code will be judged.**
+**REGRA:** Se está no CLAUDE.md, DEVE ser seguido.
 
-### Step 4: Identify Implemented Files
+---
 
-From `implementation.md`, extract lists of:
-- Files created
-- Files modified
-- Files deleted
+## Phase 3: Architecture & SOLID Analysis
 
-**Read ALL these files** to perform the review.
-
-## Phase 2: Architecture & Conventions Analysis
-
-### 2.1 Clean Architecture Validation
-
-**Check for violations:**
-
-❌ **Layer Dependency Violations**
-```typescript
-// VIOLATION: Repository depending on DTO (outer layer)
-export interface IUserRepository {
-  create(dto: CreateUserDto): Promise<User>; // DTO = outer layer
-}
-
-// CORRECT: Repository using domain entities
-export interface IUserRepository {
-  create(data: Omit<User, 'id' | 'createdAt'>): Promise<User>;
-}
-```
-
-**Validate:**
+### 3.1 Clean Architecture
 - Domain layer NEVER imports from outer layers
 - Repositories use domain entities, NOT DTOs
 - Services use repositories via interfaces
 - Controllers handle DTOs and call services
 
-### 2.2 CQRS Pattern Validation
+### 3.2 Single Responsibility (SRP)
+- Classes doing only one thing
+- No business logic in processors/controllers
+- Protocol-specific logic in adapters/strategies
 
-**Check for violations:**
+### 3.3 Open/Closed (OCP)
+- Use Strategy/Factory patterns for extensibility
+- No switch/if-else chains for type handling
 
-❌ **Commands with query logic**
-```typescript
-// VIOLATION: Command returning data
-export class GetUserCommand { } // Should be direct repository call
-```
+### 3.4 Dependency Inversion (DIP)
+- Depend on abstractions (interfaces), not concretions
+- Follow project's DI pattern from CLAUDE.md
 
-❌ **Queries with side effects**
-```typescript
-// VIOLATION: Query method modifying state
-async getUserAndUpdateLastSeen(id: string) { } // Should be separate
-```
+---
 
-**Validate:**
-- Commands: Write operations only (Create, Update, Delete)
-- Queries: Read operations directly via repositories (no QueryHandlers for simple reads)
-- Commands emit events, don't return domain data
-- Event handlers are idempotent
+## Phase 4: Security & Multi-Tenancy
 
-### 2.3 File Structure Validation
-
-**Check against project conventions:**
-
-❌ **Wrong file placement**
-```
-apps/backend/src/utils/UserValidator.ts  // WRONG - should be in module
-apps/backend/src/api/modules/auth/UserValidator.ts  // CORRECT
-```
-
-❌ **Multiple definitions per file**
-```typescript
-// VIOLATION: Multiple exports in one file
-export class CreateUserCommand { }
-export class UpdateUserCommand { }
-export class DeleteUserCommand { }
-
-// CORRECT: One command per file
-// CreateUserCommand.ts
-export class CreateUserCommand { }
-```
-
-**Expected Structure (per module):**
-```
-api/modules/[feature]/
-├── dtos/               # One DTO per file
-├── commands/           # One command per file
-│   └── handlers/       # One handler per file
-├── events/             # One event per file
-│   └── handlers/       # One handler per file
-├── [feature].controller.ts
-├── [feature].service.ts
-└── [feature].module.ts
-```
-
-### 2.4 Naming Convention Validation
-
-**Validate against CLAUDE.md conventions:**
-
-| Type | Expected Pattern | Example |
-|------|------------------|---------|
-| DTOs | `[Action][Entity]Dto` | `CreateUserDto` |
-| Commands | `[Action][Subject]Command` | `SignUpCommand` |
-| Events | `[Subject][PastAction]Event` | `UserCreatedEvent` |
-| Handlers | `[Command/Event]Handler` | `SignUpCommandHandler` |
-| Services | `[Name]Service` | `AuthService` |
-| Repositories | `I[Entity]Repository` | `IUserRepository` |
-
-❌ **Violations:**
-```typescript
-export class UserCreate { }           // WRONG: CreateUserCommand
-export class CreatedUser { }          // WRONG: UserCreatedEvent
-export class HandleSignUp { }         // WRONG: SignUpCommandHandler
-export interface UserRepo { }         // WRONG: IUserRepository
-```
-
-## Phase 3: SOLID Principles Analysis
-
-### 3.1 Single Responsibility Principle (SRP)
-
-**⚠️ CRITICAL CHECK: Responsibility Leaks**
-
-❌ **Example Violation (from user's concern):**
-```typescript
-// VIOLATION: Processor with business logic that belongs in adapter/strategy
-@Processor('webhook-processor')
-export class WebhookProcessor {
-  async process(job: Job) {
-    // ❌ WRONG: Validating protocol type here
-    if (job.data.protocol === 'whaticket') {
-      // Handle whaticket...
-    } else if (job.data.protocol === 'waha') {
-      // Handle waha...
-    }
-  }
-}
-
-// ✅ CORRECT: Responsibility in adapter/strategy
-export class WebhookProcessor {
-  constructor(
-    private readonly parserFactory: WebhookParserFactory
-  ) {}
-
-  async process(job: Job) {
-    const parser = this.parserFactory.create(job.data.protocol);
-    return parser.parse(job.data); // Responsibility delegated
-  }
-}
-```
-
-**Check for:**
-- Classes doing more than one thing
-- Business logic in processors/controllers (should be in services/handlers)
-- Validation logic scattered (should be centralized in DTOs or validators)
-- Protocol-specific logic in generic classes (should be in adapters/strategies)
-
-### 3.2 Open/Closed Principle (OCP)
-
-❌ **Violations:**
-```typescript
-// VIOLATION: Adding new cases requires modifying this class
-export class NotificationService {
-  send(type: string, data: any) {
-    if (type === 'email') { /* ... */ }
-    else if (type === 'sms') { /* ... */ }
-    else if (type === 'push') { /* ... */ } // Adding this = modification
-  }
-}
-
-// ✅ CORRECT: Strategy pattern (open for extension, closed for modification)
-export class NotificationService {
-  constructor(
-    private readonly strategies: Map<string, INotificationStrategy>
-  ) {}
-
-  send(type: string, data: any) {
-    return this.strategies.get(type)?.send(data);
-  }
-}
-```
-
-### 3.3 Liskov Substitution Principle (LSP)
-
-❌ **Violations:**
-```typescript
-// VIOLATION: Subclass throwing unexpected errors
-export class PremiumUserRepository extends UserRepository {
-  create(data: User): Promise<User> {
-    throw new Error('Premium users must use special creation'); // Breaks LSP
-  }
-}
-```
-
-### 3.4 Interface Segregation Principle (ISP)
-
-❌ **Violations:**
-```typescript
-// VIOLATION: Fat interface forcing implementations to implement unused methods
-export interface IUserService {
-  create(data: User): Promise<User>;
-  update(id: string, data: Partial<User>): Promise<User>;
-  delete(id: string): Promise<void>;
-  sendWelcomeEmail(userId: string): Promise<void>; // ❌ Not user service responsibility
-  generateReport(userId: string): Promise<Report>; // ❌ Not user service responsibility
-}
-
-// ✅ CORRECT: Segregated interfaces
-export interface IUserService {
-  create(data: User): Promise<User>;
-  update(id: string, data: Partial<User>): Promise<User>;
-  delete(id: string): Promise<void>;
-}
-
-export interface IUserEmailService {
-  sendWelcomeEmail(userId: string): Promise<void>;
-}
-
-export interface IUserReportService {
-  generateReport(userId: string): Promise<Report>;
-}
-```
-
-### 3.5 Dependency Inversion Principle (DIP)
-
-❌ **Violations:**
-```typescript
-// VIOLATION: Depending on concrete implementation
-export class AuthService {
-  constructor(
-    private readonly userRepo: UserRepository // ❌ Concrete class
-  ) {}
-}
-
-// ✅ CORRECT: Depending on abstraction
-export class AuthService {
-  constructor(
-    @Inject('IUserRepository')
-    private readonly userRepo: IUserRepository // ✅ Interface
-  ) {}
-}
-```
-
-## Phase 4: KISS & YAGNI Analysis
-
-### 4.1 Over-Engineering Detection
-
-❌ **YAGNI Violations (You Aren't Gonna Need It):**
-```typescript
-// VIOLATION: Complex abstraction for simple operation
-export abstract class BaseValidator<T> {
-  abstract validate(data: T): Promise<ValidationResult<T>>;
-  abstract sanitize(data: T): Promise<T>;
-  abstract transform(data: T): Promise<T>;
-}
-
-export class CreateUserValidator extends BaseValidator<CreateUserDto> {
-  // Only using validate, other methods unused
-}
-
-// ✅ CORRECT: Simple validation
-export class CreateUserDto {
-  @IsEmail()
-  email: string;
-
-  @MinLength(8)
-  password: string;
-}
-```
-
-**Check for:**
-- Unused abstractions (interfaces/base classes with single implementation)
-- Premature optimization (caching for low-traffic endpoints)
-- Overly generic utilities (used once)
-- Future-proofing for hypothetical requirements
-
-### 4.2 Complexity Detection
-
-❌ **KISS Violations (Keep It Simple):**
-```typescript
-// VIOLATION: Over-complicated factory with unnecessary abstraction
-export class StrategyFactoryBuilder {
-  private strategies: Map<string, () => IStrategy>;
-
-  withStrategy(key: string, factory: () => IStrategy) { /* ... */ }
-  build(): StrategyFactory { /* ... */ }
-}
-
-// ✅ CORRECT: Simple factory
-export class StrategyFactory {
-  private strategies = new Map<string, IStrategy>();
-
-  constructor() {
-    this.strategies.set('type1', new Strategy1());
-    this.strategies.set('type2', new Strategy2());
-  }
-
-  create(type: string): IStrategy {
-    return this.strategies.get(type);
-  }
-}
-```
-
-**Check for:**
-- Unnecessary abstraction layers
-- Complex inheritance hierarchies (prefer composition)
-- Generic solutions for specific problems
-- Code that's hard to understand without extensive documentation
-
-### 4.3 Dead Code Detection
-
-**Check for:**
-- Unused imports
-- Commented-out code blocks
-- Unused methods/classes
-- Unused DTOs/interfaces
-
-## Phase 5: Multi-Tenancy & Security Validation
-
-### 5.1 Account Isolation
-
-**⚠️ CRITICAL:** EVERY query MUST filter by `account_id`.
-
-❌ **Violations:**
-```typescript
-// VIOLATION: Missing account_id filter
-async findAll(): Promise<User[]> {
-  return this.db.selectFrom('users').selectAll().execute();
-}
-
-// ✅ CORRECT: Always filter by account_id
-async findByAccountId(accountId: string): Promise<User[]> {
-  return this.db
-    .selectFrom('users')
-    .where('account_id', '=', accountId)
-    .selectAll()
-    .execute();
-}
-```
-
-**Check:**
-- All repository queries filter by `account_id`
-- Controllers validate `accountId` from JWT
+### 4.1 Account Isolation
+- **EVERY query MUST filter by `account_id`** (if multi-tenancy is defined in CLAUDE.md)
+- Controllers validate ownership
 - No cross-tenant data leaks
 
-### 5.2 Security Validation
+### 4.2 Security
+- No sensitive data in logs
+- Credentials encrypted (if encryption service exists)
+- Input validation via DTOs with decorators
 
-**Check for:**
-- Sensitive data in logs (passwords, tokens)
-- Credentials not encrypted (must use `IEncryptionService`)
-- Missing input validation (DTOs without decorators)
-- SQL injection risks (using raw queries instead of query builder)
+---
 
-## Phase 6: Code Quality Checks
+## Phase 5: KISS & YAGNI
 
-### 6.1 Error Handling
+- No unused abstractions
+- No premature optimization
+- No future-proofing for hypothetical requirements
+- Simple solutions for simple problems
 
-**Check for:**
-- Silent failures (`try/catch` without logging)
-- Generic error messages ("Error occurred")
-- Throwing base `Error` instead of domain-specific exceptions
-- Missing null checks for optional dependencies
+---
 
-### 6.2 Logging
+## Phase 6: Apply Fixes (AUTO-CORRECTION)
 
-**Check for:**
-- Inconsistent log levels
-- Missing context in logs (no `accountId`, `userId`, `operation`)
-- Excessive logging (debug logs in production code)
-- Missing critical logs (command execution, errors)
+**⚠️ OBRIGATÓRIO:** Para CADA violação encontrada, aplicar a correção imediatamente.
 
-### 6.3 Testing Considerations
+### Processo de Correção:
 
-**Check for:**
-- Untestable code (tight coupling, hidden dependencies)
-- Logic in controllers (should be in services)
-- Complex conditional logic without clear separation
+1. **Identificar violação** → Documentar problema
+2. **Aplicar correção** → Editar o arquivo
+3. **Verificar build** → Garantir que compila
+4. **Documentar** → Registrar no relatório
 
-## Phase 7: Generate Review Report (MANDATORY)
+### Ordem de Correção:
 
-Create: `docs/features/${FEATURE_ID}/review.md`
+```
+1. Project-specific pattern violations (mais importantes)
+2. DI/Service injection violations
+3. Architecture violations
+4. SOLID violations
+5. Security violations
+6. Code quality issues
+```
 
-**Structure:**
+### Build Verification:
+```bash
+npm run build
+```
+
+**CRÍTICO:** Só prossiga para documentação quando TODAS as correções forem aplicadas e o build passar.
+
+---
+
+## Phase 7: Generate Review Report
+
+**Create:** `docs/features/${FEATURE_ID}/review.md`
 
 ```markdown
 # Code Review: [Feature Name]
@@ -445,13 +198,13 @@ Create: `docs/features/${FEATURE_ID}/review.md`
 **Date:** [current date]
 **Reviewer:** Claude Code Review Agent
 **Feature:** ${FEATURE_ID}
-**Status:** ✅ APPROVED | ⚠️ APPROVED WITH RECOMMENDATIONS | ❌ REQUIRES CHANGES
+**Status:** ✅ APPROVED (corrections applied)
 
 ---
 
 ## Executive Summary
 
-[2-3 sentences: overall quality, major findings, recommendation]
+[2-3 sentences: what was found, what was fixed, final state]
 
 ---
 
@@ -459,266 +212,123 @@ Create: `docs/features/${FEATURE_ID}/review.md`
 
 | Category | Score | Status |
 |----------|-------|--------|
-| Architecture & Conventions | X/10 | ✅/⚠️/❌ |
+| Project Patterns | X/10 | ✅/⚠️/❌ |
+| Architecture | X/10 | ✅/⚠️/❌ |
 | SOLID Principles | X/10 | ✅/⚠️/❌ |
-| KISS & YAGNI | X/10 | ✅/⚠️/❌ |
-| Multi-Tenancy & Security | X/10 | ✅/⚠️/❌ |
+| Security & Multi-Tenancy | X/10 | ✅/⚠️/❌ |
 | Code Quality | X/10 | ✅/⚠️/❌ |
-| **OVERALL** | **X/10** | **✅/⚠️/❌** |
-
-**Legend:**
-- ✅ Excellent (8-10): No issues or minor improvements only
-- ⚠️ Good (5-7): Some improvements recommended
-- ❌ Needs Work (0-4): Critical issues found, refactoring required
+| **OVERALL** | **X/10** | **✅** |
 
 ---
 
-## ❌ Critical Issues (MUST FIX)
+## 🔧 Issues Found & Fixed
 
 ### Issue #1: [Title]
 
-**Severity:** 🔴 Critical | 🟡 Moderate | 🟢 Minor
-**Category:** [Architecture | SOLID | Security | etc.]
+**Category:** [Project Patterns | Architecture | SOLID | Security]
 **File:** `path/to/file.ts:line`
+**Severity:** 🔴 Critical | 🟡 Moderate | 🟢 Minor
 
 **Problem:**
-\`\`\`typescript
-// Current implementation (problematic)
-[paste code snippet]
-\`\`\`
+```typescript
+// Code before fix
+```
 
 **Why it's a problem:**
-[Explain violation - which principle, what risk, what maintenance issue]
+[Explanation - reference CLAUDE.md pattern that was violated]
 
-**Suggested Fix:**
-\`\`\`typescript
-// Recommended implementation
-[paste corrected code snippet]
-\`\`\`
+**Fix Applied:**
+```typescript
+// Code after fix
+```
 
-**Impact if not fixed:**
-[Consequences: technical debt, bugs, security risk, etc.]
-
----
-
-### Issue #2: [Title]
-[Same structure...]
-
----
-
-## ⚠️ Recommendations (SHOULD FIX)
-
-### Recommendation #1: [Title]
-[Same structure as Critical Issues, but less severe]
+**Status:** ✅ FIXED
 
 ---
 
 ## ✅ Strengths
 
-- [List positive aspects: good patterns used, clean code sections, etc.]
-- [Be specific: "Excellent use of Strategy pattern in WebhookParserFactory"]
-
----
-
-## 📋 Architecture Compliance
-
-### Clean Architecture ✅/⚠️/❌
-- [ ] Domain layer has no outward dependencies
-- [ ] Repositories use domain entities (not DTOs)
-- [ ] Services orchestrate via interfaces
-- [ ] Controllers handle DTOs only
-
-**Issues:** [List violations or "None"]
-
-### CQRS Pattern ✅/⚠️/❌
-- [ ] Commands for write operations
-- [ ] Queries via repositories (no unnecessary QueryHandlers)
-- [ ] Event handlers are idempotent
-- [ ] Clear separation of concerns
-
-**Issues:** [List violations or "None"]
-
-### File Structure ✅/⚠️/❌
-- [ ] One definition per file
-- [ ] Correct folder placement
-- [ ] Barrel exports in index.ts
-- [ ] No mixing of concerns (DTOs in separate folder from commands)
-
-**Issues:** [List violations or "None"]
-
-### Naming Conventions ✅/⚠️/❌
-- [ ] DTOs: `[Action][Entity]Dto`
-- [ ] Commands: `[Action][Subject]Command`
-- [ ] Events: `[Subject][PastAction]Event`
-- [ ] Handlers: `[Command/Event]Handler`
-
-**Issues:** [List violations or "None"]
-
----
-
-## 🔍 SOLID Analysis
-
-### Single Responsibility ✅/⚠️/❌
-**Issues:** [List classes with multiple responsibilities]
-
-### Open/Closed ✅/⚠️/❌
-**Issues:** [List classes that require modification for extension]
-
-### Liskov Substitution ✅/⚠️/❌
-**Issues:** [List subclass violations]
-
-### Interface Segregation ✅/⚠️/❌
-**Issues:** [List fat interfaces]
-
-### Dependency Inversion ✅/⚠️/❌
-**Issues:** [List concrete dependencies instead of abstractions]
-
----
-
-## 🎯 KISS & YAGNI Analysis
-
-### Over-Engineering ✅/⚠️/❌
-**Issues:** [List unnecessary abstractions, premature optimizations]
-
-### Code Complexity ✅/⚠️/❌
-**Issues:** [List overly complex implementations]
-
-### Dead Code ✅/⚠️/❌
-**Issues:** [List unused code, commented blocks]
-
----
-
-## 🔒 Security & Multi-Tenancy
-
-### Account Isolation ✅/⚠️/❌
-- [ ] All queries filter by `account_id`
-- [ ] Controllers validate `accountId` from JWT
-- [ ] No cross-tenant data access
-
-**Issues:** [List violations or "None"]
-
-### Security Practices ✅/⚠️/❌
-- [ ] Credentials encrypted via `IEncryptionService`
-- [ ] No sensitive data in logs
-- [ ] Input validation via DTOs
-- [ ] No SQL injection risks
-
-**Issues:** [List violations or "None"]
-
----
-
-## 📝 Code Quality
-
-### Error Handling ✅/⚠️/❌
-**Issues:** [List silent failures, generic errors]
-
-### Logging ✅/⚠️/❌
-**Issues:** [List inconsistent logging, missing context]
-
-### Testability ✅/⚠️/❌
-**Issues:** [List untestable code patterns]
+- [Positive aspects of the implementation]
 
 ---
 
 ## 🎓 Learning Opportunities
 
-[Educational notes for future implementations:]
-- [Pattern to remember: "When adding protocol-specific logic, always use Strategy pattern"]
-- [Anti-pattern to avoid: "Don't put business logic in processors"]
+- [Educational notes for future implementations]
 
 ---
 
-## ✅ Approval Checklist
+## Build Status
 
-Before merging, ensure:
-- [ ] All Critical Issues resolved
-- [ ] Security issues addressed
-- [ ] Multi-tenancy validated
-- [ ] Code compiles without errors
-- [ ] No dead code or commented blocks
-- [ ] Logging is consistent and contextual
-- [ ] Naming follows project conventions
+- [x] Backend compiles successfully
+- [x] Frontend compiles successfully
+- [x] All corrections applied
 
-**Final Recommendation:** [MERGE | REVISE | MAJOR REFACTOR NEEDED]
-
----
-
-## 📌 Next Steps
-
-1. [Action item based on review - e.g., "Refactor WebhookProcessor to use Strategy pattern"]
-2. [Action item...]
-3. [Action item...]
-
-**Estimated Refactoring Effort:** [Low | Medium | High] ([X hours])
+**Final Status:** ✅ READY FOR MERGE
 ```
 
 ---
 
 ## Phase 8: Completion
 
-After generating the review report, inform the user:
+**Inform the user:**
 
-**"✅ Code Review Complete!**
+```
+✅ Code Review Complete!
 
-Relatório gerado em `docs/features/${FEATURE_ID}/review.md`.
+Feature: ${FEATURE_ID}
 
 **Resumo:**
-- **Status Geral:** [✅/⚠️/❌]
-- **Score:** [X/10]
-- **Issues Críticos:** [X]
-- **Recomendações:** [Y]
+- Issues encontrados: [X]
+- Issues corrigidos: [X]
+- Score final: [X/10]
 
-**Principais Achados:**
-- [Top 3 issues summary]
+**Correções Aplicadas:**
+- [Lista das principais correções]
 
-**Recomendação Final:** [MERGE | REVISE | MAJOR REFACTOR NEEDED]
+**Build Status:** ✅ Compiling
 
-Revise o relatório completo para detalhes e sugestões de correção.
+**Relatório:** `docs/features/${FEATURE_ID}/review.md`
 
----
+**Status:** ✅ READY FOR MERGE
 
-**Próximos Passos:**
-
-**Se houver Issues Críticos ou Recomendações a corrigir:**
-```bash
-/dev @docs/features/${FEATURE_ID}/review.md
+Próximos Passos:
+1. Revise as correções aplicadas
+2. Teste a funcionalidade
+3. Stage e commit quando aprovado
 ```
-Este comando aplicará automaticamente as correções sugeridas no review.
-
-**Se o código foi aprovado (✅):**
-Prossiga para commit e merge."
 
 ---
 
 ## Critical Rules
 
+**⚠️ AUTO-CORREÇÃO OBRIGATÓRIA:**
+- NUNCA gere apenas relatório sem corrigir
+- SEMPRE aplique as correções automaticamente
+- SEMPRE verifique o build após correções
+- Só finalize quando código estiver 100% correto
+
+**⚠️ CLAUDE.md É A FONTE DA VERDADE:**
+- SEMPRE leia CLAUDE.md ANTES de revisar
+- TODO padrão definido no CLAUDE.md DEVE ser seguido
+- Se código viola padrão do CLAUDE.md → é uma violação CRÍTICA
+- Não invente padrões - use apenas os definidos no projeto
+
 **BE CRITICAL:**
-- Don't be lenient - find problems before production
-- Prefer specific examples over generic advice
-- Always provide corrected code snippets
-- Explain WHY something is wrong, not just THAT it's wrong
-
-**BE CONSTRUCTIVE:**
-- Suggest concrete fixes
-- Explain trade-offs
-- Acknowledge good patterns
-- Focus on learning opportunities
-
-**BE CONSISTENT:**
-- Use CLAUDE.md as single source of truth for conventions
-- Judge all code by same standards
-- Don't accept "good enough" if it violates principles
+- Find ALL violations against CLAUDE.md patterns
+- Check EVERY pattern defined in the project
+- Validate EVERY query has proper filters (if multi-tenancy defined)
 
 **DO NOT:**
-- Skip any validation category
-- Accept violations "because it works"
-- Ignore small issues (they compound)
-- Be vague ("this could be better") - be specific
+- Generate report without fixing issues
+- Skip project-specific pattern validation
+- Accept "it works" as justification for violations
+- Leave code in non-compiling state
+- Invent patterns not defined in CLAUDE.md
 
 **DO:**
-- Find responsibility leaks (logic in wrong layer)
-- Validate EVERY query has `account_id` filter
-- Check for over-engineering (YAGNI violations)
-- Verify naming conventions rigorously
-- Provide corrected code examples
-- Score honestly based on actual code quality
+- Read CLAUDE.md completely first
+- Fix ALL issues automatically
+- Verify build passes after fixes
+- Document before/after for each fix
+- Reference CLAUDE.md in explanations

@@ -1,4 +1,4 @@
-import { AuditLog } from '@agentics/domain';
+import { AuditLog } from '@fnd/domain';
 
 export interface IAuditLogRepository {
   create(data: Omit<AuditLog, 'id' | 'createdAt'>): Promise<AuditLog>;

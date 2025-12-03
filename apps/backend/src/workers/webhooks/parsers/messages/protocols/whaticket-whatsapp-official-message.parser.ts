@@ -3,7 +3,7 @@ import {
   ParsedWebhookData,
   WebhookEventContext,
   ParseResult,
-} from '@agentics/backend';
+} from '@fnd/backend';
 import {
   MessageContext,
   TypedMessage,
@@ -19,7 +19,7 @@ import {
   ContactContent,
   LocationContent,
   Contact,
-} from '@agentics/domain';
+} from '@fnd/domain';
 import { BaseMessageParser } from '../base/base-message-parser';
 
 /**

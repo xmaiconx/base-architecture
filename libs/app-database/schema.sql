@@ -11,7 +11,7 @@ CREATE TABLE accounts (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-COMMENT ON TABLE accounts IS 'Represents a tenant in the multi-tenant architecture (a therapist or a clinic).';
+COMMENT ON TABLE accounts IS 'Represents a tenant in the multi-tenant architecture (each account is isolated).';
 
 -- Tabela 2: plans (Planos de Assinatura da Plataforma)
 -- Catálogo de planos que podem ser assinados.

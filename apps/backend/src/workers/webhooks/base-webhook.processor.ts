@@ -1,8 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Job } from 'bullmq';
-import { ILoggerService } from '@agentics/backend';
-import { IWebhookEventRepository } from '@agentics/database';
-import { WebhookStatus, WebhookType, MessageContext } from '@agentics/domain';
+import { ILoggerService } from '@fnd/backend';
+import { IWebhookEventRepository } from '@fnd/database';
+import { WebhookStatus, WebhookType, MessageContext } from '@fnd/domain';
 import { WebhookParserFactoryService } from './parsers/webhook-parser-factory.service';
 import { MessageParserFactoryService } from './parsers/messages/message-parser-factory.service';
 import { MessagePipelineProcessor } from '../messages/message-pipeline.processor';

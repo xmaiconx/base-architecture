@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown, Plus, Search } from 'lucide-react'
-import { Workspace } from '@agentics/domain'
+import type { Workspace } from '@/types/domain/entities'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'

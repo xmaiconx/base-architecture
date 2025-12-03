@@ -1,4 +1,4 @@
-import { WebhookType, WebhookStatus } from '@agentics/domain';
+import { WebhookType, WebhookStatus } from '@fnd/domain';
 
 /**
  * DTO para criar um novo webhook event

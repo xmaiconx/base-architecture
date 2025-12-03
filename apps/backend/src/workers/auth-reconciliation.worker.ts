@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ILoggerService, IScheduleService, IntervalSchedule, ISupabaseService } from '@agentics/backend';
-import { IUserRepository } from '@agentics/database';
+import { ILoggerService, IScheduleService, IntervalSchedule, ISupabaseService } from '@fnd/backend';
+import { IUserRepository } from '@fnd/database';
 import { SyncAuthUserCommand } from '../api/modules/auth/commands';
 
 /**

@@ -1,12 +1,12 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { ILoggerService, ParseResult } from '@agentics/backend';
+import { ILoggerService, ParseResult } from '@fnd/backend';
 import {
   IThreadRepository,
   IMessageRepository,
   IProjectRepository,
   CreateThreadData,
-} from '@agentics/database';
-import { MessageContext, ChatChannel, ChatProvider, ChatImplementation } from '@agentics/domain';
+} from '@fnd/database';
+import { MessageContext, ChatChannel, ChatProvider, ChatImplementation } from '@fnd/domain';
 import { MessagePipelineFactory } from '../../shared/messages/pipeline/MessagePipelineFactory';
 
 /**

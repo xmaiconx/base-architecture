@@ -1,8 +1,8 @@
 import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
-import { IJobQueue, ILoggerService } from '@agentics/backend';
-import { QUEUE_COMMANDS } from '@agentics/backend';
+import { IJobQueue, ILoggerService } from '@fnd/backend';
+import { QUEUE_COMMANDS } from '@fnd/backend';
 import { CreateAuditLogCommand } from '../../shared/messaging';
-import { IAuditLogRepository } from '@agentics/database';
+import { IAuditLogRepository } from '@fnd/database';
 
 @Injectable()
 export class AuditProcessor implements OnModuleInit {

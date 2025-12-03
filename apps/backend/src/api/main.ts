@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-import { IConfigurationService } from '@agentics/backend';
+import { IConfigurationService } from '@fnd/backend';
 import { StartupLoggerService } from '../shared/services/startup-logger.service';
 
 export async function api() {

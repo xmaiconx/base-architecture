@@ -1,4 +1,4 @@
-import { Subscription } from '@agentics/domain';
+import { Subscription } from '@fnd/domain';
 
 export interface ISubscriptionRepository {
   findById(id: string): Promise<Subscription | null>;

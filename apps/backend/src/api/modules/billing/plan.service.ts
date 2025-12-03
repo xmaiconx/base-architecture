@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Plan, PlanCode, PlanFeatures } from '@agentics/domain';
-import { IPlanRepository, ISubscriptionRepository, IWorkspaceRepository } from '@agentics/database';
+import { Plan, PlanCode, PlanFeatures } from '@fnd/domain';
+import { IPlanRepository, ISubscriptionRepository, IWorkspaceRepository } from '@fnd/database';
 import {
   IPlanService,
   FeatureCheckResult,
   ValidationResult,
   AccountUsage,
-} from '@agentics/backend';
+} from '@fnd/backend';
 
 @Injectable()
 export class PlanService implements IPlanService {

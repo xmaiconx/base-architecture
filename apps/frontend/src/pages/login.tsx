@@ -13,7 +13,7 @@ import { toast } from 'sonner'
 export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { signIn, loading } = useSupabaseAuth()
+  const { signIn } = useSupabaseAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<SignInInput>({

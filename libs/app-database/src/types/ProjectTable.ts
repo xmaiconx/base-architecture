@@ -1,5 +1,5 @@
 import { Generated, ColumnType } from 'kysely';
-import { ProjectSettings } from '@agentics/domain';
+import { ProjectSettings } from '@fnd/domain';
 
 export interface ProjectTable {
   id: Generated<string>;

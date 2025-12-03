@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ILoggerService, IMessagePipelineStep } from '@agentics/backend';
-import { MessageContext, PipelineResult } from '@agentics/domain';
+import { ILoggerService, IMessagePipelineStep } from '@fnd/backend';
+import { MessageContext, PipelineResult } from '@fnd/domain';
 
 /**
  * MP My IABlue - Verify Authorized Sender Step

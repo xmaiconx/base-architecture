@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IScheduleService, ScheduleConfig, IConfigurationService } from '@agentics/backend';
+import { IScheduleService, ScheduleConfig, IConfigurationService } from '@fnd/backend';
 import { Queue } from 'bullmq';
 import Redis from 'ioredis';
 

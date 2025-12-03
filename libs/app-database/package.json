@@ -1,5 +1,5 @@
 {
-  "name": "@agentics/database",
+  "name": "@fnd/database",
   "version": "1.0.0",
   "description": "Database layer with Kysely",
   "main": "dist/index.js",
@@ -14,7 +14,7 @@
     "seed:make": "knex seed:make"
   },
   "dependencies": {
-    "@agentics/domain": "*",
+    "@fnd/domain": "*",
     "dotenv": "^16.4.5",
     "knex": "^3.0.0",
     "kysely": "^0.27.0",

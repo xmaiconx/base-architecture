@@ -2,9 +2,9 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Inject, BadRequestException } from '@nestjs/common';
 import { CompleteSignUpCommand } from '../CompleteSignUpCommand';
 import { AccountCreatedEvent } from '../../events/AccountCreatedEvent';
-import { EntityStatus, UserRole, OnboardingStatus } from '@agentics/domain';
-import { IUserRepository, IAccountRepository, IWorkspaceRepository, IWorkspaceUserRepository } from '@agentics/database';
-import { ILoggerService, IEventBroker, IConfigurationService } from '@agentics/backend';
+import { EntityStatus, UserRole, OnboardingStatus } from '@fnd/domain';
+import { IUserRepository, IAccountRepository, IWorkspaceRepository, IWorkspaceUserRepository } from '@fnd/database';
+import { ILoggerService, IEventBroker, IConfigurationService } from '@fnd/backend';
 
 /**
  * CompleteSignUpCommandHandler
@@ -73,7 +73,7 @@ export class CompleteSignUpCommandHandler implements ICommandHandler<CompleteSig
 
     // Create Account (tenant root)
     const account = await this.accountRepository.create({
-      name: `Clínica de ${fullName}`,
+      name: `Conta de ${fullName}`,
     });
 
     this.logger.info('Account created', {
@@ -86,7 +86,7 @@ export class CompleteSignUpCommandHandler implements ICommandHandler<CompleteSig
     // Create default Workspace
     const workspace = await this.workspaceRepository.create({
       accountId: account.id,
-      name: `Meu Consultório`,
+      name: `Meu Workspace`,
       status: EntityStatus.ACTIVE,
       onboardingStatus: OnboardingStatus.PENDING,
     });

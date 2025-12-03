@@ -1,4 +1,4 @@
-import { WorkspaceUser } from '@agentics/domain';
+import { WorkspaceUser } from '@fnd/domain';
 
 export interface IWorkspaceUserRepository {
   addUserToWorkspace(data: Omit<WorkspaceUser, 'createdAt'>): Promise<WorkspaceUser>;

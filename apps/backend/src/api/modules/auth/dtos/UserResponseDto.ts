@@ -1,4 +1,4 @@
-import type { EntityStatus } from '@agentics/domain';
+import type { EntityStatus } from '@fnd/domain';
 
 /**
  * DTO de resposta contendo dados públicos do usuário

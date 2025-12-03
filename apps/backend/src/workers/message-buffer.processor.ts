@@ -3,12 +3,12 @@ import {
   ILoggerService,
   IMessageBufferService,
   IJobQueue,
-} from '@agentics/backend';
+} from '@fnd/backend';
 import {
   IProjectRepository,
   IThreadRepository,
-} from '@agentics/database';
-import { MessageContext } from '@agentics/domain';
+} from '@fnd/database';
+import { MessageContext } from '@fnd/domain';
 import { MessagePipelineFactory } from '../shared/messages/pipeline/MessagePipelineFactory';
 
 /**

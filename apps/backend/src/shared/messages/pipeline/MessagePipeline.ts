@@ -3,8 +3,8 @@ import {
   ILoggerService,
   IMessagePipeline,
   IMessagePipelineStep,
-} from '@agentics/backend';
-import { MessageContext, PipelineResult } from '@agentics/domain';
+} from '@fnd/backend';
+import { MessageContext, PipelineResult } from '@fnd/domain';
 
 /**
  * Message Pipeline Implementation
