@@ -15,13 +15,16 @@
       "TodoRead",
       "TodoWrite",
       "WebSearch",
-      "Skill(writing-skills)"
+      "Skill(writing-skills)",
+      "mcp__supabase__get_project_url",
+      "mcp__supabase__execute_sql",
+      "mcp__supabase__search_docs"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "supabase"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }
