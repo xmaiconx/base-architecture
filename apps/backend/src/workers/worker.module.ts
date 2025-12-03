@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
 import { SharedModule } from '../shared/shared.module';
 import { MessagesModule } from '../shared/messages/messages.module';
+import { AuthModule } from '../api/modules/auth/auth.module'; // NEW: For SyncAuthUserCommand
 import {
   ThreadRepository,
   MessageRepository,
@@ -12,6 +13,7 @@ import {
 
 // Existing workers
 import { EmailWorker } from './email.worker';
+import { AuthReconciliationWorker } from './auth-reconciliation.worker'; // NEW: Auth reconciliation
 import { AuditEventListener } from './audit/audit-event-listener';
 import { AuditProcessor } from './audit/audit.processor';
 
@@ -56,10 +58,12 @@ const WEBHOOK_EVENT_REPOSITORY_TOKEN = 'IWebhookEventRepository';
     CqrsModule,
     SharedModule,
     MessagesModule, // Pipeline infrastructure
+    AuthModule, // NEW: For SyncAuthUserCommand
   ],
   providers: [
     // Existing workers
     EmailWorker,
+    AuthReconciliationWorker, // NEW: Auth reconciliation
     AuditEventListener,
     AuditProcessor,
 

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
-import { ILoggerService, IJobQueue, IScheduleService, IEventBroker, IConfigurationService, IMessageBufferService } from '@agentics/backend';
+import { ILoggerService, IJobQueue, IScheduleService, IEventBroker, IConfigurationService, IMessageBufferService, ISupabaseService } from '@agentics/backend';
 import { IEmailService } from '@agentics/backend';
 import { IEmailQueueService } from '@agentics/backend';
 import {
@@ -30,6 +30,7 @@ import { EventBrokerService } from './services/event-broker.service';
 import { ConfigurationService } from './services/configuration.service';
 import { StartupLoggerService } from './services/startup-logger.service';
 import { RedisMessageBufferService } from './services/redis-message-buffer.service';
+import { SupabaseService } from './services/supabase.service';
 
 const EMAIL_SERVICE_TOKEN = 'IEmailService';
 const LOGGER_SERVICE_TOKEN = 'ILoggerService';
@@ -47,6 +48,7 @@ const EMAIL_QUEUE_SERVICE_TOKEN = 'IEmailQueueService';
 const EVENT_BROKER_TOKEN = 'IEventBroker';
 const CONFIGURATION_SERVICE_TOKEN = 'IConfigurationService';
 const MESSAGE_BUFFER_SERVICE_TOKEN = 'IMessageBufferService';
+const SUPABASE_SERVICE_TOKEN = 'ISupabaseService';
 
 @Module({
   imports: [ConfigModule, CqrsModule],
@@ -130,6 +132,10 @@ const MESSAGE_BUFFER_SERVICE_TOKEN = 'IMessageBufferService';
       provide: MESSAGE_BUFFER_SERVICE_TOKEN,
       useClass: RedisMessageBufferService,
     },
+    {
+      provide: SUPABASE_SERVICE_TOKEN,
+      useClass: SupabaseService,
+    },
     StartupLoggerService,
   ],
   exports: [
@@ -149,6 +155,7 @@ const MESSAGE_BUFFER_SERVICE_TOKEN = 'IMessageBufferService';
     EVENT_BROKER_TOKEN,
     CONFIGURATION_SERVICE_TOKEN,
     MESSAGE_BUFFER_SERVICE_TOKEN,
+    SUPABASE_SERVICE_TOKEN,
     StartupLoggerService,
   ],
 })

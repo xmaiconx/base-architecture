@@ -4,9 +4,10 @@ export interface AccountCreatedEventData {
   accountId: string;
   workspaceId: string;
   userId: string;
+  authUserId?: string; // NEW: UUID from auth.users.id (Supabase), optional for backward compatibility
   userFullName: string;
   userEmail: string;
-  emailVerificationToken: string;
+  emailVerificationToken: string; // DEPRECATED: Supabase manages email verification
 }
 
 export class AccountCreatedEvent extends BaseEvent {
@@ -24,6 +25,10 @@ export class AccountCreatedEvent extends BaseEvent {
 
   get userId(): string {
     return this.data.userId;
+  }
+
+  get authUserId(): string | undefined {
+    return this.data.authUserId;
   }
 
   get userFullName(): string {

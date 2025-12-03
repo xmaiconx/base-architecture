@@ -3,18 +3,18 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { FormField, LoadingButton } from '@/components/forms'
-import { useSignIn } from '@/hooks/use-auth'
+import { useSupabaseAuth } from '@/hooks/use-supabase-auth'
+import { GoogleSignInButton } from '@/components/auth/google-sign-in-button'
 import { signInSchema, type SignInInput } from '@/lib/validations'
 import { APP_NAME } from '@/lib/constants'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { useAuthStore } from '@/stores/auth-store'
 
 export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const signInMutation = useSignIn()
-  const clearAuth = useAuthStore(state => state.clearAuth)
+  const { signIn, loading } = useSupabaseAuth()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
@@ -26,29 +26,32 @@ export function LoginPage() {
 
   const onSubmit = async (data: SignInInput) => {
     try {
-      await signInMutation.mutateAsync(data)
+      setIsSubmitting(true)
+      await signIn(data)
       toast.success('Login realizado com sucesso!')
 
       // Redirect to the intended page or dashboard
       const from = location.state?.from?.pathname || '/dashboard'
       navigate(from, { replace: true })
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Erro ao fazer login'
+      console.error('Login error:', error)
 
-      // Check if the error is about unverified email
-      if (message.includes('Email não verificado') || message.includes('verificado')) {
-        // Clear any residual auth state before redirecting
-        clearAuth()
+      // Handle Supabase Auth errors
+      const errorMessage = error.message || 'Erro ao fazer login'
 
-        // Redirect to email not verified page
+      if (errorMessage.includes('Email not confirmed')) {
         navigate('/email-not-verified', {
           state: {
             email: data.email,
           },
         })
+      } else if (errorMessage.includes('Invalid login credentials')) {
+        toast.error('Email ou senha incorretos')
       } else {
-        toast.error(message)
+        toast.error(errorMessage)
       }
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -97,13 +100,35 @@ export function LoginPage() {
               <LoadingButton
                 type="submit"
                 className="w-full"
-                loading={signInMutation.isPending}
+                loading={isSubmitting}
                 loadingText="Entrando..."
               >
                 Entrar
               </LoadingButton>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Ou continue com
+                  </span>
+                </div>
+              </div>
+
+              <GoogleSignInButton fullWidth disabled={isSubmitting} />
             </form>
           </FormProvider>
+
+          <div className="mt-4 text-center text-sm">
+            <Link
+              to="/auth/reset-password"
+              className="text-primary hover:underline"
+            >
+              Esqueceu sua senha?
+            </Link>
+          </div>
         </CardContent>
       </Card>
 

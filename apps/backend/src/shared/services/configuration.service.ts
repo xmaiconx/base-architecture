@@ -64,6 +64,35 @@ export class ConfigurationService implements IConfigurationService {
     };
   }
 
+  // Supabase Auth configuration methods
+  getSupabaseUrl(): string {
+    const url = this.configService.get<string>('SUPABASE_URL');
+    if (!url) {
+      throw new Error('SUPABASE_URL is required for Supabase Auth');
+    }
+    return url;
+  }
+
+  getSupabaseAnonKey(): string {
+    const key = this.configService.get<string>('SUPABASE_ANON_KEY');
+    if (!key) {
+      throw new Error('SUPABASE_ANON_KEY is required for Supabase Auth');
+    }
+    return key;
+  }
+
+  getSupabaseServiceRoleKey(): string {
+    const key = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
+    if (!key) {
+      throw new Error('SUPABASE_SERVICE_ROLE_KEY is required for Supabase Auth');
+    }
+    return key;
+  }
+
+  getSupabaseWebhookSecret(): string {
+    return this.configService.get<string>('SUPABASE_WEBHOOK_SECRET') || '';
+  }
+
   // Stripe configuration methods
   getStripeSecretKey(): string {
     const key = this.configService.get<string>('STRIPE_SECRET_KEY');

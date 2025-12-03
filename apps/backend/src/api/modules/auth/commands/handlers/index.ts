@@ -1,3 +1,2 @@
-export * from './SignUpCommandHandler';
-export * from './ConfirmEmailCommandHandler';
-export * from './ResendConfirmationCommandHandler';
+export * from './CompleteSignUpCommandHandler';
+export * from './SyncAuthUserCommandHandler';

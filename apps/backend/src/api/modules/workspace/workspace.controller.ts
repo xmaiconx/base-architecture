@@ -11,12 +11,12 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
+import { SupabaseAuthGuard } from '../../guards/supabase-auth.guard';
 import { WorkspaceFeatureGuard } from '../../guards/workspace-feature.guard';
 import { WorkspaceService } from './workspace.service';
 
 @Controller('workspaces')
-@UseGuards(JwtAuthGuard, WorkspaceFeatureGuard)
+@UseGuards(SupabaseAuthGuard, WorkspaceFeatureGuard)
 export class WorkspaceController {
   constructor(private readonly workspaceService: WorkspaceService) {}
 

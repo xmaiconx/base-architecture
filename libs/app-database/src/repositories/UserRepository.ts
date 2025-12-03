@@ -38,11 +38,11 @@ export class UserRepository implements IUserRepository {
     return result ? this.mapToUser(result) : null;
   }
 
-  async findByEmailVerificationToken(token: string): Promise<User | null> {
+  async findByAuthUserId(authUserId: string): Promise<User | null> {
     const result = await this.db
       .selectFrom('users')
       .selectAll()
-      .where('email_verification_token', '=', token)
+      .where('auth_user_id', '=', authUserId)
       .executeTakeFirst();
 
     return result ? this.mapToUser(result) : null;
@@ -54,13 +54,10 @@ export class UserRepository implements IUserRepository {
       .insertInto('users')
       .values({
         account_id: user.accountId,
+        auth_user_id: user.authUserId,
         full_name: user.fullName,
         email: user.email,
-        password_hash: user.passwordHash,
         role: user.role,
-        email_verified: user.emailVerified,
-        email_verification_token: user.emailVerificationToken,
-        email_verification_token_expiry: user.emailVerificationTokenExpiry,
         created_at: now,
         updated_at: now,
         status: 'active',
@@ -76,12 +73,10 @@ export class UserRepository implements IUserRepository {
       updated_at: new Date(),
     };
 
+    if (user.authUserId !== undefined) updateData.auth_user_id = user.authUserId;
     if (user.fullName !== undefined) updateData.full_name = user.fullName;
     if (user.email !== undefined) updateData.email = user.email;
-    if (user.passwordHash !== undefined) updateData.password_hash = user.passwordHash;
     if (user.role !== undefined) updateData.role = user.role;
-    if (user.emailVerified !== undefined) updateData.email_verified = user.emailVerified;
-    if (user.emailVerificationToken !== undefined) updateData.email_verification_token = user.emailVerificationToken;
 
     const result = await this.db
       .updateTable('users')
@@ -104,13 +99,10 @@ export class UserRepository implements IUserRepository {
     return {
       id: row.id,
       accountId: row.account_id,
+      authUserId: row.auth_user_id || null,
       fullName: row.full_name,
       email: row.email,
-      passwordHash: row.password_hash,
       role: row.role,
-      emailVerified: row.email_verified,
-      emailVerificationToken: row.email_verification_token,
-      emailVerificationTokenExpiry: row.email_verification_token_expiry,
       status: row.status,
       createdAt: row.created_at,
       updatedAt: row.updated_at,

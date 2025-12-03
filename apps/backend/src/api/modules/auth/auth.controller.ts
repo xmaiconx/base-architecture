@@ -1,55 +1,50 @@
 import { Controller, Post, Body, HttpStatus, HttpCode, Get, UseGuards, Request } from '@nestjs/common';
-import { SignUpDto, SignInDto, ConfirmEmailDto, ResendConfirmationDto } from './dtos';
+import { ResendConfirmationDto } from './dtos';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
+import { SupabaseAuthGuard } from '../../guards/supabase-auth.guard';
 
+/**
+ * AuthController (Adapted for Supabase Auth)
+ *
+ * REMOVED endpoints (now handled by frontend → Supabase directly):
+ * - POST /auth/signup - Frontend calls supabase.auth.signUp()
+ * - POST /auth/signin - Frontend calls supabase.auth.signInWithPassword()
+ * - POST /auth/confirm-email - Supabase handles confirmation via callback URL
+ *
+ * KEPT endpoints:
+ * - GET /auth/me - Returns user profile (protected by SupabaseAuthGuard)
+ * - POST /auth/resend-confirmation - Proxies to Supabase Auth API
+ */
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('signup')
-  async signUp(@Body() signUpDto: SignUpDto) {
-    const result = await this.authService.signUp(signUpDto);
+  /**
+   * Get current authenticated user profile
+   *
+   * Protected by SupabaseAuthGuard (validates Supabase JWT token)
+   * Frontend must send: Authorization: Bearer <supabase_access_token>
+   */
+  @Get('me')
+  @UseGuards(SupabaseAuthGuard)
+  async getMe(@Request() req: any) {
+    const user = await this.authService.getMe(req.user.userId);
     return {
-      message: 'Conta criada com sucesso. Verifique seu email para confirmar.',
-      userId: result.userId,
+      user,
     };
   }
 
-  @Post('signin')
-  @HttpCode(HttpStatus.OK)
-  async signIn(@Body() signInDto: SignInDto) {
-    const result = await this.authService.signIn(signInDto);
-    return {
-      accessToken: result.accessToken,
-      user: result.user,
-    };
-  }
-
-  @Post('confirm-email')
-  @HttpCode(HttpStatus.OK)
-  async confirmEmail(@Body() confirmEmailDto: ConfirmEmailDto) {
-    await this.authService.confirmEmail(confirmEmailDto.token);
-    return {
-      message: 'Email confirmado com sucesso.',
-    };
-  }
-
+  /**
+   * Resend email confirmation (proxies to Supabase Auth API)
+   *
+   * Frontend can also call supabase.auth.resend() directly
+   */
   @Post('resend-confirmation')
   @HttpCode(HttpStatus.OK)
   async resendConfirmation(@Body() resendConfirmationDto: ResendConfirmationDto) {
     await this.authService.resendConfirmation(resendConfirmationDto.email);
     return {
       message: 'Email de confirmação reenviado com sucesso.',
-    };
-  }
-
-  @Get('me')
-  @UseGuards(JwtAuthGuard)
-  async getMe(@Request() req: any) {
-    const user = await this.authService.getMe(req.user.userId);
-    return {
-      user,
     };
   }
 }

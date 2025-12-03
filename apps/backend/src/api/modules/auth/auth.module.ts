@@ -1,42 +1,27 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { PassportModule } from '@nestjs/passport';
-import { JwtModule } from '@nestjs/jwt';
 import { SharedModule } from '../../../shared/shared.module';
-import { IConfigurationService } from '@agentics/backend';
 import { AuthController } from './auth.controller';
+import { SupabaseWebhookController } from './supabase-webhook.controller';
 import { AuthService } from './auth.service';
-import { JwtStrategy } from './strategies/jwt.strategy';
 import { RoleElevationService } from './services/role-elevation.service';
-import { SignUpCommandHandler, ConfirmEmailCommandHandler, ResendConfirmationCommandHandler } from './commands';
-import { AccountCreatedEventHandler, EmailConfirmedEventHandler, ConfirmationEmailResentEventHandler } from './events';
+import { CompleteSignUpCommandHandler, SyncAuthUserCommandHandler } from './commands';
+import { AccountCreatedEventHandler, ConfirmationEmailResentEventHandler } from './events';
 
 @Module({
   imports: [
     CqrsModule,
     SharedModule,
-    PassportModule,
-    JwtModule.registerAsync({
-      imports: [SharedModule],
-      useFactory: async (configurationService: IConfigurationService) => ({
-        secret: configurationService.getJwtSecret(),
-        signOptions: { expiresIn: '7d' },
-      }),
-      inject: ['IConfigurationService'],
-    }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, SupabaseWebhookController],
   providers: [
     AuthService,
-    JwtStrategy,
     RoleElevationService,
-    SignUpCommandHandler,
-    ConfirmEmailCommandHandler,
-    ResendConfirmationCommandHandler,
+    CompleteSignUpCommandHandler,
+    SyncAuthUserCommandHandler,
     AccountCreatedEventHandler,
-    EmailConfirmedEventHandler,
     ConfirmationEmailResentEventHandler,
   ],
-  exports: [AuthService],
+  exports: [AuthService, RoleElevationService],
 })
 export class AuthModule {}

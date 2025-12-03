@@ -5,6 +5,7 @@ export { ILoggerService, LogContext } from './services/ILoggerService';
 export { IScheduleService } from './services/IScheduleService';
 export { IEmailService } from './services/IEmailService';
 export { IEmailQueueService } from './services/IEmailQueueService';
+export { ISupabaseService, SupabaseUser } from './services/ISupabaseService';
 
 // Features
 export { IFeatureFlags } from './features/IFeatureFlags';

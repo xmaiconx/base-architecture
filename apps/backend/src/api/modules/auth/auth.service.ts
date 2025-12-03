@@ -1,113 +1,52 @@
-import { Injectable, BadRequestException, UnauthorizedException, Inject, NotFoundException } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
-import { JwtService } from '@nestjs/jwt';
-import { SignUpDto, SignInDto, UserResponseDto } from './dtos';
-import { User, EntityStatus } from '@agentics/domain';
-import { SignUpCommand, ConfirmEmailCommand, ResendConfirmationCommand } from './commands';
+import { Injectable, BadRequestException, Inject, NotFoundException } from '@nestjs/common';
+import { UserResponseDto } from './dtos';
 import { IUserRepository } from '@agentics/database';
-import { ILoggerService } from '@agentics/backend';
-import * as bcrypt from 'bcrypt';
+import { ILoggerService, ISupabaseService } from '@agentics/backend';
 
+/**
+ * AuthService (Adapted for Supabase Auth)
+ *
+ * REMOVED methods (now handled by frontend → Supabase directly):
+ * - signUp() - Frontend calls supabase.auth.signUp()
+ * - signIn() - Frontend calls supabase.auth.signInWithPassword()
+ * - confirmEmail() - Frontend calls Supabase directly
+ *
+ * KEPT methods:
+ * - getMe() - Returns user profile (called after SupabaseAuthGuard validates token)
+ * - resendConfirmation() - Proxy to Supabase Auth API
+ */
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly commandBus: CommandBus,
-    private readonly jwtService: JwtService,
     @Inject('IUserRepository') private readonly userRepository: IUserRepository,
     @Inject('ILoggerService') private readonly logger: ILoggerService,
+    @Inject('ISupabaseService') private readonly supabaseService: ISupabaseService,
   ) {}
 
-  async signUp(signUpDto: SignUpDto): Promise<{ userId: string }> {
-    const { fullName, email, password } = signUpDto;
-
-    this.logger.info('Delegating signup to command handler', {
-      operation: 'auth.signup.delegate',
-      module: 'AuthService',
-      email,
-    });
-
-    const command = new SignUpCommand(fullName, email, password);
-    return await this.commandBus.execute(command);
-  }
-
-  async signIn(signInDto: SignInDto): Promise<{ accessToken: string; user: Omit<User, 'passwordHash' | 'emailVerificationToken'> }> {
-    const { email, password } = signInDto;
-
-    this.logger.info('User signin attempt', {
-      operation: 'auth.signin.start',
-      module: 'AuthService',
-      email,
-    });
-
-    const user = await this.userRepository.findByEmail(email);
-    if (!user) {
-      this.logger.warn('Signin attempt with non-existent email', {
-        operation: 'auth.signin.user_not_found',
-        module: 'AuthService',
-        email,
-      });
-      throw new UnauthorizedException('Credenciais inválidas');
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isPasswordValid) {
-      this.logger.warn('Signin attempt with invalid password', {
-        operation: 'auth.signin.invalid_password',
-        module: 'AuthService',
-        userId: user.id,
-        email,
-      });
-      throw new UnauthorizedException('Credenciais inválidas');
-    }
-
-    if (!user.emailVerified) {
-      this.logger.warn('Signin attempt with unverified email', {
-        operation: 'auth.signin.email_not_verified',
-        module: 'AuthService',
-        userId: user.id,
-        email,
-      });
-      throw new UnauthorizedException('Email não verificado. Verifique sua caixa de entrada.');
-    }
-
-    const payload = { userId: user.id, accountId: user.accountId, email: user.email };
-    const accessToken = this.jwtService.sign(payload);
-
-    this.logger.info('User signin successful', {
-      operation: 'auth.signin.success',
-      module: 'AuthService',
-      userId: user.id,
-      accountId: user.accountId,
-      email,
-    });
-
-    const { passwordHash, emailVerificationToken, ...userWithoutSensitiveData } = user;
-
-    return {
-      accessToken,
-      user: userWithoutSensitiveData,
-    };
-  }
-
-  async confirmEmail(token: string): Promise<void> {
-    this.logger.info('Delegating email confirmation to command handler', {
-      operation: 'auth.confirm_email.delegate',
-      module: 'AuthService',
-    });
-
-    const command = new ConfirmEmailCommand(token);
-    return await this.commandBus.execute(command);
-  }
-
+  /**
+   * Resend confirmation email (proxies to Supabase Auth API)
+   * Frontend can also call supabase.auth.resend() directly
+   */
   async resendConfirmation(email: string): Promise<void> {
-    this.logger.info('Delegating resend confirmation to command handler', {
-      operation: 'auth.resend_confirmation.delegate',
+    this.logger.info('Resending confirmation email via Supabase', {
+      operation: 'auth.resend_confirmation.start',
       module: 'AuthService',
       email,
     });
 
-    const command = new ResendConfirmationCommand(email);
-    return await this.commandBus.execute(command);
+    try {
+      await this.supabaseService.resendConfirmationEmail(email);
+
+      this.logger.info('Confirmation email resent successfully', {
+        operation: 'auth.resend_confirmation.success',
+        module: 'AuthService',
+        email,
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to resend confirmation email: ${errorMessage}`, error instanceof Error ? error : new Error(errorMessage));
+      throw new BadRequestException('Failed to resend confirmation email');
+    }
   }
 
   async getMe(userId: string): Promise<UserResponseDto> {
@@ -135,9 +74,6 @@ export class AuthService {
       accountId: user.accountId,
     });
 
-    // Retornar apenas dados não sensíveis
-    const { passwordHash, emailVerificationToken, emailVerificationTokenExpiry, ...userResponse } = user;
-
-    return userResponse;
+    return user;
   }
 }

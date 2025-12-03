@@ -4,13 +4,10 @@ import { UserRole } from '../enums/UserRole';
 export interface User {
   id: string;
   accountId: string;
+  authUserId: string | null; // FK to auth.users.id (Supabase Auth)
   fullName: string;
   email: string;
-  passwordHash: string;
   role: UserRole;
-  emailVerified: boolean;
-  emailVerificationToken: string | null;
-  emailVerificationTokenExpiry: Date | null;
   status: EntityStatus;
   createdAt: Date;
   updatedAt: Date;

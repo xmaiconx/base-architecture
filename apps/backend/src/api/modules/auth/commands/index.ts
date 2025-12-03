@@ -1,5 +1,4 @@
-export { SignUpCommand } from './SignUpCommand';
-export { ConfirmEmailCommand } from './ConfirmEmailCommand';
-export { ResendConfirmationCommand } from './ResendConfirmationCommand';
+export { CompleteSignUpCommand } from './CompleteSignUpCommand';
+export { SyncAuthUserCommand } from './SyncAuthUserCommand';
 
 export * from './handlers';
