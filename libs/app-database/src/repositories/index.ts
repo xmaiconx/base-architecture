@@ -4,8 +4,5 @@ export { WorkspaceRepository } from './WorkspaceRepository';
 export { WorkspaceUserRepository } from './WorkspaceUserRepository';
 export { AuditLogRepository } from './AuditLogRepository';
 export { WebhookEventRepository } from './WebhookEventRepository';
-export { ThreadRepository } from './ThreadRepository';
-export { MessageRepository } from './MessageRepository';
-export { ProjectRepository } from './ProjectRepository';
 export { PlanRepository } from './PlanRepository';
 export { SubscriptionRepository } from './SubscriptionRepository';

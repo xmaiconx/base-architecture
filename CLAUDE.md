@@ -14,8 +14,7 @@ Template base para alunos do **Fábrica de Negócios Digitais (FND)** iniciarem 
 ### Backend
 - **Framework**: NestJS 10 (dependency injection, modules, CQRS)
 - **Database**: PostgreSQL 15 + Kysely 0.27 (type-safe queries) + Knex 3.0 (migrations)
-- **Job Queue**: BullMQ 4.0 + Redis (ioredis 5.3)
-- **Message Bus**: RabbitMQ + amqplib 0.10.9 (event broker)
+- **Queue Service**: Upstash QStash (serverless async jobs)
 - **Auth**: Passport 0.6 + JWT + bcrypt 5.1
 - **Email**: Resend 2.0 (async via queue)
 - **Logging**: Winston 3.10 (structured logging)
@@ -38,12 +37,14 @@ Template base para alunos do **Fábrica de Negócios Digitais (FND)** iniciarem 
 ```
 fnd-easyflow-template/
 ├── apps/
-│   ├── backend/         # @fnd/api - NestJS API + Workers (DTOs in module folders)
+│   ├── backend/         # @fnd/api - NestJS API (serverless)
+│   ├── workers/         # @fnd/workers-app - Vercel Functions (thin wrappers)
 │   └── frontend/        # @fnd/frontend - React App (DTOs mirrored in types/)
 └── libs/
     ├── domain/          # @fnd/domain - Domain entities, enums, types
     ├── backend/         # @fnd/backend - Service interfaces
-    ├── app-database/    # @fnd/database - Data access (PostgreSQL, uses domain entities)
+    ├── workers/         # @fnd/workers - Pure handlers (serverless logic)
+    └── app-database/    # @fnd/database - Data access (PostgreSQL, uses domain entities)
 ```
 
 ## 🔧 Convenções de Nomenclatura
@@ -70,9 +71,9 @@ fnd-easyflow-template/
 
 ### Domain Layer (`libs/domain/src/`)
 ```
-├── entities/          # Account, User, Workspace, WorkspaceUser, Project, AuditLog, WebhookEvent
-├── enums/             # EntityStatus, UserRole, MessageType, ProjectStatus (um por arquivo)
-├── types/             # MessageContext, MessageMetadata, PipelineResult, ProjectPipelineConfig
+├── entities/          # Account, User, Workspace, WorkspaceUser, AuditLog
+├── enums/             # EntityStatus, UserRole, OnboardingStatus, PaymentProvider (um por arquivo)
+├── types/             # Billing types, feature flags, etc.
 └── index.ts           # Barrel exports
 ```
 
@@ -94,15 +95,34 @@ export interface IUserRepository {
 
 **Por quê?** Database layer NEVER depends on DTOs (outer layer). Use domain entities exclusively. DTOs live in API modules (`apps/backend/src/api/modules/[module]/dtos/`).
 
+## 🚀 Serverless Architecture
+
+### Stack Serverless
+- **Vercel Functions**: API NestJS + Workers
+- **Upstash QStash**: Async job queue (substitui BullMQ)
+- **Supabase PostgreSQL**: Database
+- **Resend**: Email transacional
+
+### Separação de Responsabilidades
+```
+apps/backend/     → NestJS API (endpoints REST)
+apps/workers/     → Thin wrappers (entrypoints serverless, ~30-40 linhas cada)
+libs/workers/     → Handlers puros (lógica de negócio, ~50-100 linhas cada)
+```
+
+### Benefícios
+- **Bundle Size Reduzido**: Workers ~3-5MB vs NestJS full ~15MB
+- **Cold Start Rápido**: ~800ms-1.5s vs ~2-5s com NestJS DI
+- **Reusabilidade**: Handlers puros podem ser chamados pela API se necessário
+- **Testabilidade**: Handlers puros = mock apenas o context
+- **Deploy Simplificado**: `git push` deploya tudo
+
 ## 🎯 Backend Architecture
 
-### Dual-Mode Bootstrap
+### Serverless Bootstrap
 **Arquivo**: `apps/backend/src/index.ts`
 
-**Modes** (via `NODE_MODE` env):
-- `api-only`: HTTP API apenas (porta 3001)
-- `workers-only`: BullMQ workers apenas
-- `undefined`: API + Workers juntos
+Backend runs as Vercel serverless function. For local development, use `apps/backend/src/local.ts`.
 
 ### Feature-First Module Structure
 ```
@@ -178,31 +198,29 @@ import { AccountCreatedEvent } from './events';
 
 **Providers** (via DI tokens):
 - `ILoggerService` → `WinstonLoggerService`
-- `IJobQueue` → `RedisJobQueueService`
 - `IEmailService` → `ResendEmailService`
-- `IEmailQueueService` → `EmailQueueService`
-- `IEventBroker` → `BullMQEventBrokerService`
-- `IMessageBufferService` → `RedisMessageBufferService`
-- `IScheduleService` → `RedisScheduleService`
 - `IConfigurationService` → `ConfigurationService`
 - `IEncryptionService` → `EncryptionService`
+- `IPaymentService` → `StripePaymentService`
 - `DATABASE` → Kysely instance (PostgreSQL)
-- Todos os Repositories (User, Account, Workspace, WorkspaceUser, AuditLog, WebhookEvent, Thread, Message, Project)
+- Todos os Repositories (User, Account, Workspace, WorkspaceUser, AuditLog, Subscription, Plan, PlanPrice, PaymentHistory)
 
-### Workers Module
-**Arquivo**: `apps/backend/src/workers/worker.module.ts`
+### Workers Architecture (Serverless)
 
-**Processors**:
-- `EmailWorker` (processa fila de emails via Resend)
-- `DomainEventsProcessor` (processa domain/integration events)
-- `AuditEventListener` (global event handler) + `AuditProcessor`
-- **Webhook Processors** (processa webhooks por protocolo):
-  - `BaseWebhookProcessor` (classe abstrata)
-  - `WhaticketWebhookProcessor`
-  - `WahaWebhookProcessor`
-  - `NotificamehubWebhookProcessor`
-- `MessagePipelineProcessor` (executa pipeline de mensagens)
-- `MessageBufferProcessor` (processa buffer de mensagens)
+**Pasta**: `apps/workers/` (thin wrappers) + `libs/workers/` (pure handlers)
+
+**Handlers Puros** (libs/workers/src/handlers/):
+- `send-email.handler.ts` - Email sending logic (Resend)
+- `process-audit.handler.ts` - Audit log persistence
+- `stripe-webhook.handler.ts` - Stripe webhook processing
+
+**Vercel Functions** (apps/workers/):
+- `send-email.ts` - Vercel Function wrapper (~30 lines)
+- `process-audit.ts` - Vercel Function wrapper (~30 lines)
+- `stripe-webhook.ts` - Vercel Function wrapper (~40 lines)
+
+**Factory**:
+- `create-handler-context.ts` - Creates context without NestJS DI
 
 ### Backend API Modules
 **Pasta**: `apps/backend/src/api/modules/`
@@ -216,14 +234,14 @@ import { AccountCreatedEvent } from './events';
    - Structure: dtos/
    - Read-only access to audit logs
 
-3. **webhooks/** - Processamento de webhooks
-   - Structure: dtos/
-   - Receives and processes webhook events from external channels
-
-4. **workspace/** - Gerenciamento de workspaces
+3. **workspace/** - Gerenciamento de workspaces
    - Structure: events/, dtos/
    - Multi-workspace support per account
    - User-workspace relationships
+
+4. **billing/** - Gerenciamento de assinaturas e pagamentos
+   - Structure: commands/, dtos/, services/
+   - Stripe integration for subscriptions and payments
 
 ## 🔄 Padrões Arquiteturais
 
@@ -234,57 +252,21 @@ import { AccountCreatedEvent } from './events';
 
 ### 2. Event-Driven Architecture
 **Componentes**:
-- `IEventBroker` (interface) → `BullMQEventBrokerService` (implementação)
-- `EventSerializerService` (serialização de eventos para fila)
-- `DomainEventsProcessor` (worker que processa eventos)
-- `EventHandlerRegistry` (registro de handlers globais)
+- Events são publicados via Upstash QStash
+- Workers processam eventos de forma assíncrona
 
 **Fluxo**:
-- **Domain Events**: Internos ao módulo, transacionais
-- **Integration Events**: Entre módulos, assíncronos via BullMQ
+- **Domain Events**: Internos ao módulo, síncronos
+- **Integration Events**: Entre módulos, assíncronos via QStash
 - **Handlers idempotentes**: Podem ser executados múltiplas vezes
-- **Global Handlers**: AuditEventListener escuta todos os eventos para auditoria
+- **Audit Processing**: Eventos são persistidos via worker dedicado
 
 ### 3. Repository Pattern
 - **Interface**: `I[Entity]Repository` (@fnd/database)
 - **Implementation**: `[Entity]Repository` (Kysely)
 - **Retorna**: Domain entities (@fnd/domain)
 
-### 4. Pipeline Pattern
-**Arquivo**: `apps/backend/src/shared/messages/pipeline/`
-
-**Componentes**:
-- `IMessagePipelineStep` (interface)
-- `MessagePipeline` (executor)
-- `MessagePipelineFactory` (cria pipelines por projeto)
-- `PipelineStepRegistry` (registro de steps)
-
-```typescript
-execute(context: MessageContext): Promise<PipelineResult>
-// PipelineResult = { shouldContinue, context, reason? }
-```
-
-**Base Steps** (execução sequencial):
-- `AddToBufferStep` - Adiciona mensagem ao buffer
-- `BufferMessagesStep` - Gerencia buffer de mensagens
-- `CheckCommandStep` - Verifica comandos especiais
-- `ClearBufferStep` - Limpa buffer
-- `ConvertMediaToTextStep` - Converte áudio/imagem em texto
-- `GenerateAIResponseStep` - Gera resposta com IA
-- `LoadBufferedMessagesStep` - Carrega mensagens bufferizadas
-- `SaveMessageStep` - Persiste mensagem
-- `SendResponseStep` - Envia resposta ao canal
-- `VerifyAuthorizedSenderStep` - Valida remetente autorizado
-
-**Project-Specific Steps** (extensão):
-- `pipeline/projects/mp-my-iablue/` - Steps customizados por projeto
-
-### 5. Factory Pattern
-- **WebhookParserFactory**: Cria parsers por protocol (Whaticket, Waha, Notificamehub)
-- **MessageParserFactory**: Cria parsers de mensagem por tipo
-- **MessagePipelineFactory**: Cria pipelines customizados por projeto
-
-### 6. Encryption Service
+### 4. Encryption Service
 **Arquivo**: `apps/backend/src/shared/services/encryption.service.ts`
 
 **Interface**: `IEncryptionService` (libs/backend/src/security/)
@@ -292,7 +274,7 @@ execute(context: MessageContext): Promise<PipelineResult>
 - **Purpose**: Criptografa credenciais sensíveis (tokens, API keys)
 - **Methods**: `encrypt(plaintext: string): string`, `decrypt(ciphertext: string): string`
 
-### 7. Dependency Injection
+### 5. Dependency Injection
 - **NestJS DI Container**: Gerencia todas as dependências
 - **Interface-based**: Sempre injetar interfaces, não implementações
 - **Tokens**: Strings para providers (`'IUserRepository'`)
@@ -308,10 +290,8 @@ Workspaces (via account_id)
 WorkspaceUsers (bridge: user_id + workspace_id)
   ↓
 Users (via account_id)
-  ↓ own
-Projects, WebhookEvents (filtrados por account_id)
-  ↓ generate
-Threads, Messages (filtrados por account_id)
+  ↓ has
+Subscriptions (via account_id)
 ```
 
 **Modelo Multi-Workspace**: Cada Account pode ter múltiplos Workspaces. Users pertencem a Accounts e podem ser associados a Workspaces via WorkspaceUser.
@@ -332,23 +312,15 @@ workspaces            # Multi-workspace per account
 workspace_users       # User-workspace bridge table
 users                 # Auth + roles (linked to account_id)
 audit_logs            # Audit trail
-webhook_events        # Incoming webhook events (auditing + async processing)
-threads               # Conversation threads
-messages              # Individual messages
-projects              # Bot/agent project configurations
+plans                 # Subscription plans (Stripe Products)
+plan_prices           # Versioned prices for plans
+subscriptions         # Active subscriptions
+payment_history       # Payment history from Stripe
 ```
 
 ### Migrations (Knex)
 **Pasta**: `libs/app-database/migrations/`
-- `20240926001_create_core_tables.js` - Core tables (accounts, workspaces, workspace_users)
-- `20240926002_create_user_tables.js` - Users table
-- `20240926006_create_audit_logs_table.js` - Audit logs
-- `20241027001_create_webhook_events_table.js` - Webhook events
-- `20241030001_create_threads_table.js` - Threads
-- `20241030002_create_messages_table.js` - Messages
-- `20241030003_create_projects_table.js` - Projects
-- `20241030004_alter_webhook_events_add_normalized_message.js` - Schema modification
-- `20250102001_add_workspace_onboarding_fields.js` - Workspace enhancements
+- `20250101001_create_initial_schema.js` - Consolidated initial schema (all tables)
 
 ### Kysely Types
 **Arquivo**: `libs/app-database/src/types/Database.ts`
@@ -359,10 +331,10 @@ export interface Database {
   workspace_users: WorkspaceUserTable;
   users: UserTable;
   audit_logs: AuditLogTable;
-  webhook_events: WebhookEventTable;
-  threads: ThreadTable;
-  messages: MessageTable;
-  projects: ProjectTable;
+  plans: PlanTable;
+  plan_prices: PlanPriceTable;
+  subscriptions: SubscriptionTable;
+  payment_history: PaymentHistoryTable;
 }
 ```
 
@@ -379,8 +351,10 @@ SUPABASE_PUBLISHABLE_KEY=sb_publishable_...  # Frontend-safe, also used in backe
 SUPABASE_SECRET_KEY=sb_secret_...  # Backend only - NEVER expose in frontend!
 SUPABASE_WEBHOOK_SECRET=your-webhook-secret-here  # For webhook signature validation
 
-# Redis (single instance for jobs + cache)
-REDIS_JOBS_URL=redis://localhost:6379
+# Upstash QStash (serverless queue)
+QSTASH_TOKEN=your-qstash-token
+QSTASH_CURRENT_SIGNING_KEY=your-current-signing-key
+QSTASH_NEXT_SIGNING_KEY=your-next-signing-key
 
 # API
 API_PORT=3001
@@ -402,8 +376,12 @@ FRONTEND_URL=http://localhost:3000
 # Logging
 LOG_LEVEL=info  # error | warn | info | debug
 
-# Bootstrap Mode
-NODE_MODE=  # api-only | workers-only | undefined (both)
+# Vercel (auto-set by Vercel)
+VERCEL_URL=  # Auto-set by Vercel
+
+# Stripe
+STRIPE_SECRET_KEY=sk_test_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
 
 # Feature Flags
 FEATURES_WORKSPACE_ENABLED=true
@@ -413,12 +391,10 @@ FEATURES_WORKSPACE_SWITCHING_ENABLED=true
 ### Docker Services (docker-compose.yml)
 ```yaml
 postgres:15-alpine    # Port 5432 (Main PostgreSQL database)
-redis_jobs:7-alpine   # Port 6379 (persistent AOF, jobs + cache)
-cloudbeaver:latest    # Port 8080 (Universal DB manager - PostgreSQL + MySQL)
-redis_insight:latest  # Port 8001 (Redis GUI)
+cloudbeaver:latest    # Port 8080 (Universal DB manager)
 ```
 
-**Removidos**: `redis_cache` (unified Redis), `rabbitmq` (amqplib presente mas sem container), `pgadmin` (substituído por CloudBeaver)
+**Removidos**: Redis (não necessário com serverless), RabbitMQ (não necessário)
 
 ## 📜 Scripts Disponíveis
 
@@ -427,11 +403,13 @@ redis_insight:latest  # Port 8001 (Redis GUI)
 npm run build          # Turbo build (all packages)
 npm run clean          # Remove dist folders + cache
 npm run dev            # API + Frontend parallel
-npm run dev:api        # Backend API only
-npm run dev:workers    # Backend workers only
+npm run dev:api        # Backend API only (local development)
 npm run test           # Run all tests
 npm run lint           # Lint all packages
 npm run typecheck      # Type check all packages
+
+# Deploy
+vercel --prod          # Deploy to Vercel
 ```
 
 ### Database Scripts
@@ -588,10 +566,14 @@ const apiKey = this.config.getStripeSecretKey();
 - `tsconfig.base.json` - shared TypeScript config
 
 ### Backend Core
-- `apps/backend/src/index.ts` - Bootstrap (dual-mode)
-- `apps/backend/src/api/main.ts` - API server
-- `apps/backend/src/workers/main.ts` - Workers
+- `apps/backend/src/index.ts` - Serverless bootstrap (Vercel)
+- `apps/backend/src/local.ts` - Local development server
 - `apps/backend/src/shared/shared.module.ts` - Shared services
+
+### Workers
+- `apps/workers/` - Vercel Functions (thin wrappers)
+- `libs/workers/src/handlers/` - Pure handlers (business logic)
+- `libs/workers/src/create-handler-context.ts` - Context factory
 
 ### Libs (Layers)
 - `libs/domain/src/index.ts` - Domain barrel export (entities, enums, types)
@@ -624,18 +606,13 @@ const apiKey = this.config.getStripeSecretKey();
 
 ### Domain Layer Organization
 **Entities**: `libs/domain/src/entities/`
-- Account, User, Workspace, WorkspaceUser, AuditLog, WebhookEvent, Project
+- Account, User, Workspace, WorkspaceUser, AuditLog, Subscription, Plan, PlanPrice, PaymentHistory
 
 **Enums**: `libs/domain/src/enums/`
-- EntityStatus, UserRole, OnboardingStatus, ProjectStatus
-- WebhookStatus, WebhookType
-- ChatChannel, ChatProvider, ChatImplementation, PaymentProvider
-- MessageType, MessageStatus, MessageDirection, InteractiveType
+- EntityStatus, UserRole, OnboardingStatus, PaymentProvider
 
 **Types**: `libs/domain/src/types/`
-- MessageProtocol, MessageContents, MessageMetadata, MessageContext
-- MediaObject, PipelineResult, WebhookMetadata, WebhookGatewayConfig
-- ProjectPipelineConfig
+- Billing types, feature flags, audit types
 
 ### Event Naming Convention
 - **Domain Events**: `[Subject][PastTenseAction]Event` (ex: `AccountCreatedEvent`, `UserSignedUpEvent`)

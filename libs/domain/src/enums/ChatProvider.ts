@@ -1,7 +1,0 @@
-export enum ChatProvider {
-  WHATICKET = 'WHATICKET',
-  WAHA = 'WAHA',
-  NOTIFICAMEHUB = 'NOTIFICAMEHUB',
-  CHATWOOT = 'CHATWOOT',
-  FACEBOOK = 'FACEBOOK',
-}

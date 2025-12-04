@@ -1,0 +1,19 @@
+{
+  "name": "@fnd/workers-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fnd/workers": "*",
+    "@upstash/qstash": "^2.7.31",
+    "stripe": "^17.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@vercel/node": "^3.0.0",
+    "typescript": "^5.0.0"
+  }
+}

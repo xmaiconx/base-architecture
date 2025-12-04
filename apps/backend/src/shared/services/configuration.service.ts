@@ -23,10 +23,6 @@ export class ConfigurationService implements IConfigurationService {
     return this.configService.get<string>('RESEND_FROM_EMAIL') || 'noreply@rugidodigital.com.br';
   }
 
-  getRedisJobsUrl(): string {
-    return this.configService.get<string>('REDIS_JOBS_URL') || 'redis://localhost:6379';
-  }
-
   getApiPort(): number {
     const port = this.configService.get<string>('API_PORT');
     return port ? parseInt(port, 10) : 3001;
@@ -113,5 +109,38 @@ export class ConfigurationService implements IConfigurationService {
 
   getStripeCancelUrl(): string {
     return this.configService.get<string>('STRIPE_CANCEL_URL') || `${this.getFrontendUrl()}/settings/billing?canceled=true`;
+  }
+
+  // QStash configuration methods
+  getQStashToken(): string {
+    const token = this.configService.get<string>('QSTASH_TOKEN');
+    if (!token) {
+      throw new Error('QSTASH_TOKEN is required for serverless queue functionality');
+    }
+    return token;
+  }
+
+  getQStashCurrentSigningKey(): string {
+    const key = this.configService.get<string>('QSTASH_CURRENT_SIGNING_KEY');
+    if (!key) {
+      throw new Error('QSTASH_CURRENT_SIGNING_KEY is required for webhook signature verification');
+    }
+    return key;
+  }
+
+  getQStashNextSigningKey(): string {
+    const key = this.configService.get<string>('QSTASH_NEXT_SIGNING_KEY');
+    if (!key) {
+      throw new Error('QSTASH_NEXT_SIGNING_KEY is required for webhook signature verification');
+    }
+    return key;
+  }
+
+  getVercelUrl(): string {
+    return this.configService.get<string>('VERCEL_URL') || 'http://localhost:3001';
+  }
+
+  getWorkerBaseUrl(): string {
+    return `${this.getVercelUrl()}/api/workers`;
   }
 }

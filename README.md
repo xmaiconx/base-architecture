@@ -24,10 +24,10 @@ Este template inclui:
 
 - Node.js 18+ e npm 9+
 - PostgreSQL 15+ (ou Supabase)
-- Redis 7+
 - Conta Supabase (para autenticação)
 - Conta Stripe (para billing)
 - Conta Resend (para emails)
+- Conta Upstash (para QStash - serverless queue)
 
 ### Instalação
 
@@ -55,8 +55,14 @@ SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 SUPABASE_SECRET_KEY=sb_secret_...
 SUPABASE_WEBHOOK_SECRET=your-webhook-secret
 
-# Redis
-REDIS_JOBS_URL=redis://localhost:6379
+# Upstash QStash
+QSTASH_TOKEN=your-qstash-token
+QSTASH_CURRENT_SIGNING_KEY=your-current-signing-key
+QSTASH_NEXT_SIGNING_KEY=your-next-signing-key
+
+# Stripe
+STRIPE_SECRET_KEY=sk_test_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
 
 # API
 API_PORT=3001
@@ -88,8 +94,7 @@ npm run migrate:latest
 npm run dev
 
 # OU inicie separadamente:
-npm run dev:api      # Backend API apenas
-npm run dev:workers  # Workers apenas
+npm run dev:api      # Backend API apenas (local development)
 cd apps/frontend && npm run dev  # Frontend apenas
 ```
 
@@ -101,12 +106,13 @@ cd apps/frontend && npm run dev  # Frontend apenas
 
 ### Backend
 - **NestJS 10** - Framework Node.js com dependency injection
-- **PostgreSQL 15** - Banco de dados relacional
+- **PostgreSQL 15** - Banco de dados relacional (Supabase)
 - **Kysely** - Query builder type-safe
-- **BullMQ** - Filas de jobs com Redis
+- **Upstash QStash** - Serverless queue para async jobs
 - **Supabase** - Autenticação e gerenciamento de usuários
 - **Stripe** - Pagamentos e assinaturas
 - **Winston** - Logging estruturado
+- **Vercel** - Deploy serverless
 
 ### Frontend
 - **React 18** - Biblioteca UI
@@ -121,19 +127,21 @@ cd apps/frontend && npm run dev  # Frontend apenas
 ### Infraestrutura
 - **Turbo** - Build system para monorepo
 - **Docker Compose** - Orquestração de serviços locais
-- **Redis** - Cache e message broker
 - **CloudBeaver** - GUI para banco de dados
+- **Vercel** - Serverless deployment
 
 ## 📂 Estrutura do Projeto
 
 ```
 fnd-easyflow-template/
 ├── apps/
-│   ├── backend/       # API NestJS + Workers
+│   ├── backend/       # API NestJS (serverless)
+│   ├── workers/       # Vercel Functions (thin wrappers)
 │   └── frontend/      # React App
 ├── libs/
 │   ├── domain/        # Entidades e regras de negócio
 │   ├── backend/       # Interfaces de serviços
+│   ├── workers/       # Pure handlers (serverless logic)
 │   └── app-database/  # Repositórios e migrations
 ├── docs/              # Documentação do projeto
 └── .claude/           # Skills e comandos para Claude Code
@@ -144,8 +152,7 @@ fnd-easyflow-template/
 ```bash
 # Desenvolvimento
 npm run dev              # API + Frontend
-npm run dev:api          # Apenas API
-npm run dev:workers      # Apenas workers
+npm run dev:api          # Apenas API (local development)
 
 # Build
 npm run build            # Build de todos os packages
@@ -158,6 +165,9 @@ npm run seed:run         # Popular banco com dados
 
 # Limpeza
 npm run clean            # Remove dist/ e cache
+
+# Deploy
+vercel --prod            # Deploy to Vercel
 ```
 
 ## 📖 Documentação Completa
@@ -180,10 +190,35 @@ Para detalhes técnicos completos sobre arquitetura, padrões e convenções, co
    - Documente suas features em `docs/features/`
 
 3. **Deploy:**
-   - Configure CI/CD
-   - Deploy do backend (Render, Railway, AWS, etc.)
-   - Deploy do frontend (Vercel, Netlify, etc.)
-   - Configure banco em produção (Supabase)
+   - Veja seção "Deploy" abaixo
+
+## 🚀 Deploy
+
+### Vercel (Recomendado)
+
+1. Conecte o repositório ao Vercel
+2. Configure as variáveis de ambiente (ver seção abaixo)
+3. Deploy automático via git push
+
+### Variáveis de Ambiente
+
+**Obrigatórias:**
+- `DATABASE_URL` - Supabase PostgreSQL
+- `SUPABASE_URL` - Supabase API
+- `SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_SECRET_KEY`
+- `QSTASH_TOKEN` - Upstash QStash
+- `QSTASH_CURRENT_SIGNING_KEY`
+- `QSTASH_NEXT_SIGNING_KEY`
+- `RESEND_API_KEY` - Resend
+- `STRIPE_SECRET_KEY` - Stripe
+- `STRIPE_WEBHOOK_SECRET`
+- `ENCRYPTION_KEY` - 32-byte hex key para AES-256-GCM
+
+**Opcionais:**
+- `VERCEL_URL` - Auto-set by Vercel
+- `FRONTEND_URL` - URL do frontend em produção
+- `LOG_LEVEL` - Log level (error, warn, info, debug)
 
 ## 🤝 Suporte
 

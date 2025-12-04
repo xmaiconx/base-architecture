@@ -4,7 +4,6 @@ export interface IConfigurationService {
   getFrontendUrl(): string;
   getResendApiKey(): string;
   getResendFromEmail(): string;
-  getRedisJobsUrl(): string;
   getApiPort(): number;
   getSuperAdminEmail(): string | undefined;
   isSuperAdminEmail(email: string): boolean;
@@ -21,4 +20,11 @@ export interface IConfigurationService {
   getStripeWebhookSecret(): string;
   getStripeSuccessUrl(): string;
   getStripeCancelUrl(): string;
+
+  // QStash configuration
+  getQStashToken(): string;
+  getQStashCurrentSigningKey(): string;
+  getQStashNextSigningKey(): string;
+  getVercelUrl(): string;
+  getWorkerBaseUrl(): string;
 }

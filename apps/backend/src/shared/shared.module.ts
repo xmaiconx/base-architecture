@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
-import { ILoggerService, IJobQueue, IScheduleService, IEventBroker, IConfigurationService, IMessageBufferService, ISupabaseService } from '@fnd/backend';
+import { ILoggerService, IConfigurationService, ISupabaseService, IQueueService, IEventPublisher } from '@fnd/backend';
 import { IEmailService } from '@fnd/backend';
 import { IEmailQueueService } from '@fnd/backend';
 import {
@@ -23,19 +23,15 @@ import {
 } from '@fnd/database';
 import { ResendEmailService } from './services/resend-email.service';
 import { WinstonLoggerService } from './services/winston-logger.service';
-import { RedisJobQueueService } from './services/redis-job-queue.service';
-import { RedisScheduleService } from './services/redis-schedule.service';
 import { EmailQueueService } from './services/email-queue.service';
 import { EventBrokerService } from './services/event-broker.service';
 import { ConfigurationService } from './services/configuration.service';
 import { StartupLoggerService } from './services/startup-logger.service';
-import { RedisMessageBufferService } from './services/redis-message-buffer.service';
 import { SupabaseService } from './services/supabase.service';
+import { QStashQueueAdapter, QStashEventPublisher } from './adapters';
 
 const EMAIL_SERVICE_TOKEN = 'IEmailService';
 const LOGGER_SERVICE_TOKEN = 'ILoggerService';
-const JOB_QUEUE_TOKEN = 'IJobQueue';
-const SCHEDULE_SERVICE_TOKEN = 'IScheduleService';
 const DATABASE_TOKEN = 'DATABASE';
 const USER_REPOSITORY_TOKEN = 'IUserRepository';
 const ACCOUNT_REPOSITORY_TOKEN = 'IAccountRepository';
@@ -47,8 +43,9 @@ const SUBSCRIPTION_REPOSITORY_TOKEN = 'ISubscriptionRepository';
 const EMAIL_QUEUE_SERVICE_TOKEN = 'IEmailQueueService';
 const EVENT_BROKER_TOKEN = 'IEventBroker';
 const CONFIGURATION_SERVICE_TOKEN = 'IConfigurationService';
-const MESSAGE_BUFFER_SERVICE_TOKEN = 'IMessageBufferService';
 const SUPABASE_SERVICE_TOKEN = 'ISupabaseService';
+const QUEUE_SERVICE_TOKEN = 'IQueueService';
+const EVENT_PUBLISHER_TOKEN = 'IEventPublisher';
 
 @Module({
   imports: [ConfigModule, CqrsModule],
@@ -60,14 +57,6 @@ const SUPABASE_SERVICE_TOKEN = 'ISupabaseService';
     {
       provide: LOGGER_SERVICE_TOKEN,
       useClass: WinstonLoggerService,
-    },
-    {
-      provide: JOB_QUEUE_TOKEN,
-      useClass: RedisJobQueueService,
-    },
-    {
-      provide: SCHEDULE_SERVICE_TOKEN,
-      useClass: RedisScheduleService,
     },
     {
       provide: DATABASE_TOKEN,
@@ -129,20 +118,22 @@ const SUPABASE_SERVICE_TOKEN = 'ISupabaseService';
       useClass: ConfigurationService,
     },
     {
-      provide: MESSAGE_BUFFER_SERVICE_TOKEN,
-      useClass: RedisMessageBufferService,
-    },
-    {
       provide: SUPABASE_SERVICE_TOKEN,
       useClass: SupabaseService,
+    },
+    {
+      provide: QUEUE_SERVICE_TOKEN,
+      useClass: QStashQueueAdapter,
+    },
+    {
+      provide: EVENT_PUBLISHER_TOKEN,
+      useClass: QStashEventPublisher,
     },
     StartupLoggerService,
   ],
   exports: [
     EMAIL_SERVICE_TOKEN,
     LOGGER_SERVICE_TOKEN,
-    JOB_QUEUE_TOKEN,
-    SCHEDULE_SERVICE_TOKEN,
     DATABASE_TOKEN,
     USER_REPOSITORY_TOKEN,
     ACCOUNT_REPOSITORY_TOKEN,
@@ -154,8 +145,9 @@ const SUPABASE_SERVICE_TOKEN = 'ISupabaseService';
     EMAIL_QUEUE_SERVICE_TOKEN,
     EVENT_BROKER_TOKEN,
     CONFIGURATION_SERVICE_TOKEN,
-    MESSAGE_BUFFER_SERVICE_TOKEN,
     SUPABASE_SERVICE_TOKEN,
+    QUEUE_SERVICE_TOKEN,
+    EVENT_PUBLISHER_TOKEN,
     StartupLoggerService,
   ],
 })

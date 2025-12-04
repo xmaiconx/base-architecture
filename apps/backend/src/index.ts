@@ -1,28 +1,64 @@
-import { api } from './api/main';
-import { workers } from './workers/main';
+import 'reflect-metadata';
+import { NestFactory } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import { ValidationPipe, INestApplication } from '@nestjs/common';
+import express, { Request, Response } from 'express';
+import { AppModule } from './api/app.module';
 
-const mode = process.env.NODE_MODE;
+// Express app instance (singleton across invocations)
+const expressApp = express();
 
-async function bootstrap() {
-  try {
-    if (mode === 'api-only') {
-      console.log('🚀 Starting Rugido Digital API only...');
-      await api();
-    } else if (mode === 'workers-only') {
-      console.log('⚙️ Starting Rugido Digital Workers only...');
-      await workers();
-    } else {
-      console.log('🚀 Starting Rugido Digital Backend (API + Workers)...');
-      await Promise.all([
-        api(),
-        workers()
-      ]);
-      console.log('✅ Rugido Digital Backend running successfully!');
-    }
-  } catch (error) {
-    console.error('❌ Failed to start Rugido Digital Backend:', error);
-    process.exit(1);
+// NestJS app instance (cached for serverless warm starts)
+let app: INestApplication | null = null;
+
+/**
+ * Bootstrap NestJS application for Vercel serverless function
+ * Implements singleton pattern to reuse app across warm invocations
+ */
+async function bootstrap(): Promise<INestApplication> {
+  if (!app) {
+    console.log('🚀 Bootstrapping NestJS for Vercel serverless...');
+
+    app = await NestFactory.create(
+      AppModule,
+      new ExpressAdapter(expressApp),
+      {
+        logger: ['error', 'warn', 'log'],
+      },
+    );
+
+    // Enable CORS
+    app.enableCors({
+      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+      credentials: true,
+    });
+
+    // Global validation pipe
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
+
+    // Set global prefix (Vercel routes /api/* to this function)
+    app.setGlobalPrefix('api/v1');
+
+    // Initialize app (don't call listen - Vercel handles HTTP server)
+    await app.init();
+
+    console.log('✅ NestJS app initialized for serverless');
   }
+
+  return app;
 }
 
-bootstrap();
+/**
+ * Vercel serverless function handler
+ * Entry point for all API requests routed through Vercel
+ */
+export default async function handler(req: Request, res: Response) {
+  await bootstrap();
+  expressApp(req, res);
+}

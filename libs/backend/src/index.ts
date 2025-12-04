@@ -13,7 +13,8 @@ export { IFeatureFlags } from './features/IFeatureFlags';
 // Messaging
 export { IEventBroker } from './messaging/IEventBroker';
 export { IJobQueue, JobOptions } from './messaging/IJobQueue';
-export { IMessageBufferService } from './messaging/IMessageBufferService';
+export { IQueueService, QueueOptions } from './messaging/IQueueService';
+export { IEventPublisher } from './messaging/IEventPublisher';
 
 // Message commands
 export * from './messaging/commands';
@@ -35,5 +36,3 @@ export * from './cqrs';
 // Webhooks
 export * from './webhooks';
 
-// Pipelines
-export * from './pipelines';

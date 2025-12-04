@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "apps/frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
+    },
+    {
+      "src": "apps/backend/src/index.ts",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "apps/workers/*.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/workers/(.*)",
+      "dest": "/apps/workers/$1.ts"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/apps/backend/src/index.ts"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/apps/frontend/dist/$1"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "functions": {
+    "apps/backend/src/index.ts": {
+      "maxDuration": 30,
+      "memory": 1024
+    },
+    "apps/workers/*.ts": {
+      "maxDuration": 60,
+      "memory": 512
+    }
+  }
+}

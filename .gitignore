@@ -151,3 +151,6 @@ build-matrix.json
 
 # MCP file
 .mcp*
+
+# Vercel
+.vercel
