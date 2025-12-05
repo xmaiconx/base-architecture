@@ -1,100 +1,268 @@
-# Task: [Task Name]
+# F0007 - Railway Hybrid Architecture
 
 **Branch:** refactor/F0007-railway-hybrid-architecture
 **Date:** 2025-12-05
 
-## Objective
+## Objetivo
 
-[Clear description of main objective - 2-3 paragraphs explaining what this feature does and why it exists]
+Reverter a arquitetura serverless implementada na F0006 (Vercel + QStash) para uma arquitetura híbrida tradicional, permitindo deploy do backend no Railway com Docker e do frontend no Cloudflare Pages.
 
-## Business Context
+A mudança é necessária porque a arquitetura serverless da Vercel não se mostrou adequada para a natureza mais completa deste template, especialmente devido ao modelo de processamento assíncrono com eventos (CQRS) que utiliza BullMQ. O modelo serverless com QStash impõe limitações que prejudicam o fluxo natural do template educacional.
 
-**Why this functionality is needed:**
-[Explain the business need or opportunity]
+O objetivo final é ter um template que alunos possam fazer deploy facilmente no Railway (backend) e Cloudflare Pages (frontend), mantendo Redis para cache e BullMQ para processamento de filas/eventos.
 
-**What problem it solves:**
-[Describe the specific problem or pain point]
+## Contexto de Negócio
 
-**Who are the stakeholders:**
-[List stakeholders: end users, internal teams, external partners, etc.]
+**Por que essa funcionalidade é necessária:**
+A F0006 migrou o template para Vercel serverless com QStash, mas após testes ficou evidente que essa arquitetura não suporta bem o modelo de eventos CQRS do template. O cold start, as limitações do QStash (500 msgs/dia no free tier), e a complexidade adicional para um template educacional tornam a solução inadequada.
 
-## Scope
+**Qual problema resolve:**
+- Restaura a capacidade de processamento assíncrono robusto com BullMQ
+- Simplifica o modelo mental para alunos (um backend híbrido vs serverless distribuído)
+- Permite uso de Redis para cache além de filas
+- Oferece deploy mais previsível e debugável no Railway
 
-### What IS included
-- [Item 1: Specific functionality that will be implemented]
-- [Item 2: Another included feature]
-- [Item 3: etc.]
+**Quem são os stakeholders:**
+- Alunos do FND que usarão o template
+- Instrutores que precisam explicar a arquitetura
+- Desenvolvedores que farão manutenção do template
 
-### What is NOT included (out of scope)
-- [Item 1: Functionality explicitly excluded]
-- [Item 2: Features postponed to future iterations]
-- [Item 3: etc.]
+## Escopo
 
-## Business Rules
+### O que ESTÁ incluído
 
-### Validations
-1. **[Validation Name]**: [Detailed description of validation rule]
-2. **[Validation Name]**: [Detailed description of validation rule]
+#### Remoção de Código Serverless
+- Deletar pasta `apps/workers/` (Vercel Functions wrappers)
+- Deletar pasta `libs/workers/` (handlers serverless)
+- Deletar adaptadores QStash (`apps/backend/src/shared/adapters/qstash-*.ts`)
+- Remover dependência `@upstash/qstash`
 
-### Flows
+#### Novos Adapters BullMQ
+- `bullmq-queue.adapter.ts` - Implementa IQueueService
+- `bullmq-event-publisher.adapter.ts` - Implementa IEventPublisher
 
-#### 1. Main Flow (Happy Path)
-- Step 1: [User/System action]
-- Step 2: [System response]
-- Step 3: [Next action]
-- Step 4: [Final outcome]
+#### Workers BullMQ (Handlers)
+- `email.worker.ts` - Processamento de emails via fila
+- `audit.worker.ts` - Processamento de audit logs
+- `stripe-webhook.processor.ts` - Processa webhooks Stripe da fila
 
-#### 2. Alternative Flows
+#### Entrypoints do Backend
+- `apps/backend/src/api/main.ts` - Modo API (já existe)
+- `apps/backend/src/workers/main.ts` - Modo Workers (criar)
+- `apps/backend/src/hybrid/main.ts` - Modo Híbrido (criar)
+- `NODE_MODE` controla o modo de execução
 
-**Scenario A: [Name]**
-- [Description of alternative scenario]
-- [How system should behave]
+#### Infraestrutura Docker
+- Criar `/infra/docker-compose.yml` com:
+  - PostgreSQL 15 (porta 5432)
+  - Redis 7 (porta 6379)
+  - Redis Insight (porta 8001)
+  - PgAdmin (porta 5050)
+  - Network `fnd` para comunicação
 
-**Scenario B: [Name]**
-- [Description of alternative scenario]
-- [How system should behave]
+#### Atualização do Dockerfile
+- Reescrever `apps/backend/Dockerfile` para estrutura atual de libs
+- Suportar NODE_MODE (api/workers/hybrid)
 
-#### 3. Error Flows
+#### Configuração
+- Adicionar: `REDIS_URL`, `NODE_MODE`
+- Remover: `QSTASH_TOKEN`, `QSTASH_CURRENT_SIGNING_KEY`, `QSTASH_NEXT_SIGNING_KEY`, `VERCEL_URL`
 
-**Error Type 1: [Name]**
-- Trigger: [What causes this error]
-- Handling: [How to handle it]
-- User feedback: [What user sees]
+#### Documentação
+- Atualizar CLAUDE.md com nova arquitetura
+- Atualizar README.md com instruções Railway + Cloudflare
 
-**Error Type 2: [Name]**
-- Trigger: [What causes this error]
-- Handling: [How to handle it]
-- User feedback: [What user sees]
+### O que NÃO está incluído (fora do escopo)
 
-## Integrations
+- **Supabase Auth**: Mantém implementação atual intacta
+- **Stripe/Billing**: Mantém implementação atual intacta
+- **Resend Email**: Mantém serviço atual, apenas muda o trigger (fila BullMQ)
+- **Frontend React**: Apenas ajustar env vars se necessário
+- **Schema do banco**: Nenhuma migration nova necessária
+- **Cloudflare Workers/Functions**: Frontend é SPA estático puro
 
-### External APIs
-- **[API Name]**:
-  - Purpose: [Why we need this API]
-  - Endpoints: [Relevant endpoints]
-  - Authentication: [How we authenticate]
+## Regras de Negócio
 
-### Internal Services
-- **[Service Name]**:
-  - Purpose: [How this service will be used]
-  - Dependencies: [What this service depends on]
+### Validações
 
-## Edge Cases Identified
+1. **NODE_MODE obrigatório**: O backend DEVE receber `NODE_MODE` para saber qual modo iniciar
+2. **REDIS_URL obrigatório**: Redis é necessário para BullMQ funcionar
+3. **Interfaces mantidas**: IQueueService e IEventPublisher DEVEM ser mantidas para permitir troca de providers
 
-1. **[Edge Case Name]**:
-   - Description: [What is the edge case]
-   - Handling: [How we handle it]
+### Fluxos
 
-2. **[Edge Case Name]**:
-   - Description: [What is the edge case]
-   - Handling: [How we handle it]
+#### 1. Fluxo Principal - Modo Híbrido
 
-## Acceptance Criteria
+- Step 1: Backend inicia com `NODE_MODE=hybrid`
+- Step 2: API HTTP sobe na porta configurada
+- Step 3: Workers BullMQ conectam ao Redis e ficam escutando filas
+- Step 4: Requests HTTP são processados pela API
+- Step 5: Eventos async são publicados nas filas Redis
+- Step 6: Workers consomem e processam eventos
 
-1. [ ] [Criterion 1 - must be measurable and testable]
-2. [ ] [Criterion 2 - must be measurable and testable]
-3. [ ] [Criterion 3 - must be measurable and testable]
+#### 2. Fluxos Alternativos
 
-## Next Steps
+**Cenário A: Modo API Only**
+- Backend inicia apenas API HTTP
+- Workers rodam em outro processo/container
+- Útil para escalar API e Workers independentemente
 
-[Provide guidance for the Planning Agent about what needs to be designed/implemented]
+**Cenário B: Modo Workers Only**
+- Backend inicia apenas Workers BullMQ
+- API roda em outro processo/container
+- Útil para dedicar recursos aos workers
+
+#### 3. Fluxos de Erro
+
+**Erro 1: Redis indisponível**
+- Trigger: REDIS_URL inválido ou Redis offline
+- Handling: Log de erro, retry com backoff exponencial
+- User feedback: API continua funcionando, jobs ficam pendentes
+
+**Erro 2: Job falha no processamento**
+- Trigger: Erro durante processamento de job
+- Handling: BullMQ faz retry automático (configurável)
+- User feedback: Job vai para fila de failed após max retries
+
+## Integrações
+
+### Serviços Externos
+
+- **Railway**: Hospedagem do backend (Docker)
+- **Cloudflare Pages**: Hospedagem do frontend (static)
+- **Supabase**: PostgreSQL + Auth (já configurado)
+- **Stripe**: Pagamentos (já configurado)
+- **Resend**: Email transacional (já configurado)
+
+### Serviços Internos
+
+- **IQueueService**: Abstração para filas (BullMQ adapter)
+- **IEventPublisher**: Abstração para eventos (BullMQ adapter)
+- **IEmailQueueService**: Enfileira emails para processamento async
+- **IEventBroker**: Publica eventos de domínio
+
+## Edge Cases Identificados
+
+1. **Redis desconecta durante processamento**:
+   - Descrição: Conexão Redis cai enquanto job está sendo processado
+   - Handling: BullMQ tem reconexão automática, job será reprocessado
+
+2. **Container reinicia com jobs pendentes**:
+   - Descrição: Backend reinicia com jobs na fila
+   - Handling: BullMQ persiste jobs no Redis, processamento continua após restart
+
+3. **Múltiplas instâncias de Workers**:
+   - Descrição: Escalar workers horizontalmente
+   - Handling: BullMQ distribui jobs automaticamente entre workers
+
+4. **Job duplicado**:
+   - Descrição: Mesmo job processado mais de uma vez
+   - Handling: Handlers devem ser idempotentes
+
+## Critérios de Aceitação
+
+### Funcionalidade
+- [ ] Backend inicia corretamente em modo `api`
+- [ ] Backend inicia corretamente em modo `workers`
+- [ ] Backend inicia corretamente em modo `hybrid`
+- [ ] Emails são enviados via worker BullMQ
+- [ ] Audit logs são processados via worker BullMQ
+- [ ] Webhooks Stripe são processados corretamente
+- [ ] docker-compose sobe todos os serviços locais
+
+### Código
+- [ ] Zero dependências de QStash/Upstash no código final
+- [ ] Interfaces IQueueService e IEventPublisher mantidas
+- [ ] Adapters BullMQ implementam interfaces corretamente
+- [ ] Workers implementam handlers com lógica de negócio
+- [ ] Build passa 100% (backend e frontend)
+
+### Infraestrutura
+- [ ] Dockerfile funciona com libs atuais (domain, backend, app-database)
+- [ ] docker-compose.yml cria ambiente local completo
+- [ ] Variáveis de ambiente documentadas
+
+### Documentação
+- [ ] CLAUDE.md atualizado com nova arquitetura
+- [ ] README.md com instruções de deploy Railway + Cloudflare
+- [ ] Instruções de setup local com docker-compose
+
+## Próximos Passos (para Planning)
+
+1. **Fase de Limpeza**: Deletar código serverless (apps/workers, libs/workers, adapters QStash)
+2. **Fase de Criação**: Implementar adapters BullMQ e workers com handlers
+3. **Fase de Integração**: Atualizar SharedModule para usar novos adapters
+4. **Fase de Infra**: Criar docker-compose.yml e atualizar Dockerfile
+5. **Fase de Configuração**: Atualizar variáveis de ambiente
+6. **Fase de Documentação**: Atualizar CLAUDE.md e README.md
+
+---
+
+## Dependências NPM
+
+### Adicionar
+```bash
+npm install bullmq ioredis
+```
+
+### Remover
+```bash
+npm uninstall @upstash/qstash
+```
+
+---
+
+## Variáveis de Ambiente
+
+### Adicionar
+```bash
+REDIS_URL=redis://localhost:6379
+NODE_MODE=hybrid  # api | workers | hybrid
+```
+
+### Remover
+```bash
+QSTASH_TOKEN
+QSTASH_CURRENT_SIGNING_KEY
+QSTASH_NEXT_SIGNING_KEY
+VERCEL_URL
+```
+
+---
+
+## Arquitetura Final
+
+```
+git push origin main
+         │
+         ├──→ Railway (backend Docker)
+         │    └── apps/backend
+         │        ├── NODE_MODE=api     → API HTTP only
+         │        ├── NODE_MODE=workers → BullMQ workers only
+         │        └── NODE_MODE=hybrid  → API + Workers
+         │
+         └──→ Cloudflare Pages (frontend)
+              └── apps/frontend → Static SPA
+
+Local Development:
+         │
+         └──→ docker-compose up
+              ├── postgres:15    (5432)
+              ├── redis:7        (6379)
+              ├── redis-insight  (8001)
+              └── pgadmin        (5050)
+```
+
+### Fluxo de Eventos (BullMQ)
+
+```
+Ação no NestJS API
+       ↓
+IEventPublisher.publish(event)
+       ↓
+BullMQ enqueue → Redis Queue
+       ↓
+Worker consome job
+       ↓
+Handler processa (email, audit, etc.)
+```

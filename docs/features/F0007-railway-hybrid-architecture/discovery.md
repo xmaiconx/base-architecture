@@ -1,171 +1,280 @@
-# Discovery: [Task Name]
+# Discovery: Railway Hybrid Architecture
 
 **Branch:** refactor/F0007-railway-hybrid-architecture
 **Date:** 2025-12-05
 
-## Initial Analysis
+## Análise Inicial
 
-### Commit History
+### Histórico de Commits
 
-**Recent commits analyzed:**
+**Commits recentes analisados:**
 ```
-[Paste git log output here]
+a07bd49 refactor(F0006): migrate to Vercel serverless architecture with optimized workers
+4624c8b refactor(F0005-fnd-easyflow-rebrand): rebrand template para FND EasyFlow
+74370fa Merge pull request #1 from xmaiconx/refactor/F0004-supabase-env-config
+3480e8b refactor(F0004): update documentation for getUserById to clarify key usage
+8fc50e2 docs: add technical plan for F0004-supabase-env-config
+6a41615 refactor(F0004): update Supabase env variables to match current dashboard nomenclature
+66a4e41 docs: add PR/MR link to F0004-supabase-env-config
+4c6d737 feat: initialize F0004-supabase-env-config - discovery phase
+0b82fd9 .
+6c647d3 refactor(F0003): complete Supabase Auth migration
+380f840 modified: apps/backend/.env.example, libs/app-database/.env.example
+6568aba Remove legacy migration files and consolidate initial schema and seed data for plans
+6af8ecf .
+3f9b897 refactor(F0001): implement billing system and workspace enhancements
+8bb02ef feat: add Stripe integration documentation and database migration for billing tables
 ```
 
-**Key observations:**
-- [Observation 1 about recent work]
-- [Observation 2 about patterns in commits]
+**Observações chave:**
+- F0006 foi a última feature, implementando arquitetura serverless Vercel + QStash
+- Template passou por várias refatorações (F0001-F0006)
+- Supabase Auth já está implementado (F0003)
+- Billing/Stripe já está implementado (F0001)
 
-### Modified Files
+### Arquivos Modificados pela F0006
 
-**Files already modified in this branch:**
+**Estrutura criada na F0006 (a ser removida):**
 ```
-[Paste git diff --name-only output here]
+apps/workers/
+├── process-audit.ts      # Vercel Function wrapper
+├── send-email.ts         # Vercel Function wrapper
+├── stripe-webhook.ts     # Vercel Function wrapper
+├── package.json
+├── tsconfig.json
+└── README.md
+
+libs/workers/
+├── src/
+│   ├── factories/create-handler-context.ts
+│   ├── handlers/
+│   │   ├── process-audit.handler.ts
+│   │   ├── send-email.handler.ts
+│   │   └── stripe-webhook.handler.ts
+│   ├── services/
+│   │   ├── simple-config.service.ts
+│   │   ├── simple-email.service.ts
+│   │   └── simple-logger.service.ts
+│   ├── types/
+│   │   ├── HandlerContext.ts
+│   │   ├── ProcessAuditPayload.ts
+│   │   ├── SendEmailPayload.ts
+│   │   └── StripeWebhookPayload.ts
+│   ├── utils/qstash-verify.ts
+│   └── index.ts
+├── package.json
+├── tsconfig.json
+└── README.md
+
+apps/backend/src/shared/adapters/
+├── qstash-queue.adapter.ts
+├── qstash-event-publisher.adapter.ts
+└── index.ts
 ```
 
-**Analysis:**
-- [File 1]: [What was changed and why]
-- [File 2]: [What was changed and why]
+**Análise:**
+- Arquitetura serverless criou separação entre wrappers (`apps/workers`) e handlers puros (`libs/workers`)
+- QStash foi usado para verificação de assinatura e enfileiramento
+- Serviços "simple" foram criados para evitar DI do NestJS em contexto serverless
 
-### Related Functionalities
+### Funcionalidades Relacionadas
 
-**Similar features in codebase:**
-- [Feature 1]: [Location and how it's similar]
-- [Feature 2]: [Location and how it's similar]
+**Código existente que será reutilizado:**
+- `apps/backend/src/shared/services/resend-email.service.ts` - Envio de emails
+- `apps/backend/src/shared/services/event-broker.service.ts` - Publicação de eventos
+- `apps/backend/src/shared/shared.module.ts` - DI container
+- `libs/backend/src/messaging/IQueueService.ts` - Interface de filas
+- `libs/backend/src/messaging/IEventPublisher.ts` - Interface de eventos
 
-**Patterns identified:**
-- [Pattern 1: How similar features are implemented]
-- [Pattern 2: Common architectural approach]
+**Padrões identificados:**
+- Interfaces cloud-agnostic para troca de providers
+- Handlers processam payloads específicos (email, audit, webhook)
+- DI via tokens no SharedModule
 
-## Strategic Questionnaire
+## Questionário Estratégico
 
-### Category 1: Scope & Objective
+### Categoria 1: Escopo & Objetivo
 
-**Q:** What is the main goal of this functionality?
-**A:** [User response]
+**Q:** Qual é o principal objetivo desta funcionalidade?
+**A:** Reverter arquitetura serverless (F0006) para híbrida com Railway + Cloudflare + Redis/BullMQ, devido à natureza mais completa do template que requer processamento assíncrono robusto.
 
-**Q:** Who are the users/systems that will interact with it?
-**A:** [User response]
+**Q:** Quem são os usuários/sistemas que interagirão?
+**A:** Alunos do FND que usarão o template para criar seus SaaS.
 
-**Q:** What specific problem are we solving?
-**A:** [User response]
+**Q:** Qual problema específico estamos resolvendo?
+**A:** A arquitetura serverless da Vercel/QStash não suporta bem o modelo CQRS do template, além de limitações de free tier e complexidade desnecessária.
 
-### Category 2: Business Rules
+### Categoria 2: Regras de Negócio
 
-**Q:** Are there specific validations or restrictions?
-**A:** [User response]
+**Q:** Existem validações ou restrições específicas?
+**A:** NODE_MODE e REDIS_URL são obrigatórios. Interfaces IQueueService/IEventPublisher devem ser mantidas.
 
-**Q:** How should error cases be handled?
-**A:** [User response]
+**Q:** Como devem ser tratados os casos de erro?
+**A:** Retornar mensagem amigável ao usuário, BullMQ faz retry automático com backoff.
 
-**Q:** Are there dependencies on other functionalities?
-**A:** [User response]
+**Q:** Existem dependências de outras funcionalidades?
+**A:** Supabase Auth, Stripe/Billing, Resend - todos mantidos intactos.
 
-**Q:** Are there limits, quotas, or throttling to consider?
-**A:** [User response]
+**Q:** Existem limites, quotas ou throttling a considerar?
+**A:** Sem limites específicos, Redis/BullMQ não tem restrições de free tier como QStash.
 
-### Category 3: Data & Integration
+### Categoria 3: Dados & Integração
 
-**Q:** What data needs to be persisted?
-**A:** [User response]
+**Q:** Quais dados precisam ser persistidos?
+**A:** Nenhum novo dado. Jobs são temporários no Redis.
 
-**Q:** Are there external integrations (APIs, services)?
-**A:** [User response]
+**Q:** Existem integrações externas (APIs, serviços)?
+**A:** Railway (deploy), Cloudflare Pages (frontend), mantém Supabase/Stripe/Resend.
 
-**Q:** Are asynchronous processes necessary?
-**A:** [User response]
+**Q:** Processos assíncronos são necessários?
+**A:** Sim, via BullMQ - email sending, audit logging, stripe webhooks.
 
-### Category 4: Edge Cases & Failure Scenarios
+### Categoria 4: Edge Cases & Falhas
 
-**Q:** What happens in failure scenarios?
-**A:** [User response]
+**Q:** O que acontece em cenários de falha?
+**A:** BullMQ tem retry automático, jobs ficam pendentes se Redis cair, handlers são idempotentes.
 
-**Q:** How to handle legacy data or migrations?
-**A:** [User response]
+**Q:** Como lidar com dados legados ou migrações?
+**A:** Não aplicável - feature nova não requer migration de dados.
 
-**Q:** Are there performance or scalability concerns?
-**A:** [User response]
+**Q:** Existem preocupações de performance ou escalabilidade?
+**A:** Volume baixo esperado, BullMQ escala horizontalmente se necessário.
 
-**Q:** Are there specific security considerations?
-**A:** [User response]
+**Q:** Existem considerações específicas de segurança?
+**A:** Padrão da aplicação (auth JWT + account isolation).
 
-### Category 5: UI/UX (if applicable)
+### Categoria 5: UI/UX
 
-**Q:** How should the user experience be?
-**A:** [User response]
+**Q:** Como deve ser a experiência do usuário?
+**A:** Apenas API - sem frontend para esta feature.
 
-**Q:** Are there specific loading/error states?
-**A:** [User response]
+**Q:** Existem estados específicos de loading/erro?
+**A:** Padrão do sistema.
 
-**Q:** Are there responsiveness requirements?
-**A:** [User response]
+**Q:** Existem requisitos de responsividade?
+**A:** N/A.
 
-## Decisions and Clarifications
+## Decisões e Esclarecimentos
 
-### Decision 1: [Topic]
-**Context:** [Why this question/doubt arose during discovery]
-**Decision:** [What was decided and by whom]
-**Impact:** [Which areas/components are affected by this decision]
-**Rationale:** [Why this decision makes sense]
+### Decisão 1: Manter Interfaces Cloud-Agnostic
+**Contexto:** Usuário poderia querer simplificar removendo abstrações
+**Decisão:** Manter IQueueService e IEventPublisher, trocar apenas implementação QStash → BullMQ
+**Impacto:** Adapters precisam implementar interfaces existentes
+**Razão:** Permite flexibilidade futura para trocar providers sem reescrever código de negócio
 
-### Decision 2: [Topic]
-**Context:** [Why this question/doubt arose]
-**Decision:** [What was decided]
-**Impact:** [Affected areas]
-**Rationale:** [Why this decision makes sense]
+### Decisão 2: Dockerfile Único com NODE_MODE
+**Contexto:** Poderia ter Dockerfiles separados para api/workers
+**Decisão:** Dockerfile único, NODE_MODE controla modo de execução
+**Impacto:** Simplifica manutenção, mesmo container pode rodar em modos diferentes
+**Razão:** Mais simples para alunos entenderem e manterem
 
-## Assumptions & Premises
+### Decisão 3: Redis no Railway
+**Contexto:** Poderia usar Upstash Redis externo
+**Decisão:** Redis managed no Railway junto com backend
+**Impacto:** Tudo em um provider, billing simplificado
+**Razão:** Railway oferece Redis managed no free tier
 
-1. **[Assumption 1]**: [Description and justification]
-   - Impact if wrong: [What happens if this assumption is incorrect]
+### Decisão 4: Reescrever Dockerfile do Zero
+**Contexto:** Dockerfile atual referencia libs antigas (app-shared, app-infra) que não existem mais
+**Decisão:** Reescrever completamente para estrutura atual (domain, backend, app-database)
+**Impacto:** Dockerfile novo e funcional
+**Razão:** Dockerfile atual está desatualizado e não funcionaria
 
-2. **[Assumption 2]**: [Description and justification]
-   - Impact if wrong: [What happens if this assumption is incorrect]
+### Decisão 5: Implementar Handlers nos Workers
+**Contexto:** Usuário enfatizou "não esqueça de implementar os handlers dos workers"
+**Decisão:** Workers terão lógica de negócio completa nos handlers
+**Impacto:** Workers funcionais, não apenas wrappers
+**Razão:** Handlers são o core do processamento assíncrono
 
-## Edge Cases Identified
+## Premissas & Assunções
 
-1. **[Edge Case Name]**:
-   - Description: [Detailed description of the edge case]
-   - Likelihood: [High/Medium/Low]
-   - Handling Strategy: [How we plan to handle it]
+1. **Railway suporta Redis managed no free tier**
+   - Impacto se errado: Precisaria usar Upstash Redis ou outro provider
 
-2. **[Edge Case Name]**:
-   - Description: [Detailed description]
-   - Likelihood: [High/Medium/Low]
-   - Handling Strategy: [How we plan to handle it]
+2. **Cloudflare Pages aceita SPA React/Vite sem configuração especial**
+   - Impacto se errado: Precisaria ajustar build ou usar outro hosting
 
-## Out of Scope Items
+3. **BullMQ funciona bem com volumes baixos de jobs**
+   - Impacto se errado: Nenhum, BullMQ é enterprise-ready
 
-1. **[Item Name]** - [Detailed explanation of why it's out of scope]
-2. **[Item Name]** - [Detailed explanation of why it's out of scope]
+4. **Estrutura atual de libs (domain, backend, app-database) é estável**
+   - Impacto se errado: Dockerfile precisaria ajustes adicionais
 
-## References
+## Edge Cases Identificados
 
-### Codebase Files Consulted
-- [File path 1]: [What was learned from it]
-- [File path 2]: [What was learned from it]
+1. **Redis desconecta durante processamento**
+   - Descrição: Conexão Redis cai no meio de um job
+   - Probabilidade: Baixa
+   - Estratégia: BullMQ tem reconexão automática, job será reprocessado
 
-### Documentation Consulted
-- [Document name/path]: [Key insights]
-- [Document name/path]: [Key insights]
+2. **Container reinicia com jobs pendentes**
+   - Descrição: Deploy/restart com jobs na fila
+   - Probabilidade: Média
+   - Estratégia: Jobs persistem no Redis, processamento continua após restart
 
-### Related Functionalities
-- [Feature name]: [Location and relevance]
-- [Feature name]: [Location and relevance]
+3. **Job duplicado (at-least-once delivery)**
+   - Descrição: Mesmo job processado mais de uma vez
+   - Probabilidade: Baixa
+   - Estratégia: Handlers devem ser idempotentes
 
-## Summary for Planning
+4. **Redis cheio**
+   - Descrição: Redis atinge limite de memória
+   - Probabilidade: Muito baixa (volume baixo)
+   - Estratégia: Monitorar métricas, limpar jobs antigos
 
-**Executive Summary:**
-[2-3 paragraphs summarizing the entire discovery process, key decisions, and what the Planning Agent needs to focus on]
+## Itens Fora do Escopo
 
-**Critical Requirements:**
-- [Requirement 1]
-- [Requirement 2]
-- [Requirement 3]
+1. **Supabase Auth** - Mantém implementação F0003 intacta
+2. **Stripe/Billing** - Mantém implementação F0001 intacta
+3. **Frontend React** - Apenas ajustar env vars se necessário
+4. **Schema do banco** - Nenhuma migration
+5. **Cloudflare Workers/Functions** - Frontend é SPA estático puro
+6. **CI/CD** - Não incluído, Railway e Cloudflare têm deploy automático via git
 
-**Technical Constraints:**
-- [Constraint 1]
-- [Constraint 2]
+## Referências
 
-**Next Phase Focus:**
-[What the Planning Agent should prioritize in the technical design]
+### Arquivos do Codebase Consultados
+- `apps/workers/` - Estrutura serverless a ser removida
+- `libs/workers/` - Handlers serverless a serem adaptados
+- `apps/backend/src/shared/shared.module.ts` - DI container atual
+- `apps/backend/src/shared/adapters/` - Adapters QStash a substituir
+- `apps/backend/Dockerfile` - Dockerfile desatualizado a reescrever
+- `libs/backend/src/messaging/` - Interfaces IQueueService, IEventPublisher
+- `docs/features/F0006-vercel-serverless-architecture/about.md` - Feature anterior
+
+### Documentação Consultada
+- CLAUDE.md - Arquitetura atual e convenções
+- F0006 about.md - Detalhes da arquitetura serverless
+
+### Funcionalidades Relacionadas
+- F0006-vercel-serverless-architecture - Feature sendo revertida
+- F0001-template-cleanup-billing-workspaces - Billing/Stripe
+- F0003-supabase-auth-migration - Supabase Auth
+
+## Resumo para Planning
+
+**Sumário Executivo:**
+Esta feature reverte a arquitetura serverless (F0006) para uma arquitetura híbrida tradicional. O template precisa de processamento assíncrono robusto que o modelo serverless Vercel/QStash não suporta adequadamente.
+
+O trabalho envolve: (1) deletar código serverless (apps/workers, libs/workers, adapters QStash), (2) criar novos adapters BullMQ que implementam as interfaces existentes, (3) implementar workers com handlers completos para email, audit e stripe webhooks, (4) criar infraestrutura Docker local (docker-compose) e atualizar Dockerfile para Railway, (5) atualizar documentação.
+
+O usuário enfatizou a importância de implementar os handlers dos workers com a lógica de negócio completa, não apenas wrappers.
+
+**Requisitos Críticos:**
+- Workers BullMQ com handlers funcionais (email, audit, stripe)
+- Adapters BullMQ implementando IQueueService e IEventPublisher
+- docker-compose.yml com PostgreSQL, Redis, Redis Insight, PgAdmin
+- Dockerfile atualizado para estrutura atual de libs
+- NODE_MODE controlando modo de execução (api/workers/hybrid)
+
+**Restrições Técnicas:**
+- Manter interfaces cloud-agnostic (IQueueService, IEventPublisher)
+- Não alterar Supabase Auth, Stripe/Billing, schema do banco
+- Build deve passar 100%
+
+**Foco da Próxima Fase (Planning):**
+1. Definir ordem de execução (limpeza → criação → integração)
+2. Especificar estrutura dos workers e handlers
+3. Detalhar docker-compose.yml com todas as configurações
+4. Planejar atualização do Dockerfile
+5. Mapear todas as mudanças no SharedModule
