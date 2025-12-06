@@ -21,10 +21,9 @@ export interface IConfigurationService {
   getStripeSuccessUrl(): string;
   getStripeCancelUrl(): string;
 
-  // QStash configuration
-  getQStashToken(): string;
-  getQStashCurrentSigningKey(): string;
-  getQStashNextSigningKey(): string;
-  getVercelUrl(): string;
-  getWorkerBaseUrl(): string;
+  // Redis configuration
+  getRedisUrl(): string;
+
+  // Node mode configuration
+  getNodeMode(): 'api' | 'workers' | 'hybrid';
 }

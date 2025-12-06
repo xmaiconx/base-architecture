@@ -14,9 +14,9 @@ Template base para alunos do **Fábrica de Negócios Digitais (FND)** iniciarem 
 ### Backend
 - **Framework**: NestJS 10 (dependency injection, modules, CQRS)
 - **Database**: PostgreSQL 15 + Kysely 0.27 (type-safe queries) + Knex 3.0 (migrations)
-- **Queue Service**: Upstash QStash (serverless async jobs)
-- **Auth**: Passport 0.6 + JWT + bcrypt 5.1
-- **Email**: Resend 2.0 (async via queue)
+- **Queue Service**: BullMQ 5.0 + Redis 7 (async jobs and caching)
+- **Auth**: Supabase Auth (JWT-based authentication)
+- **Email**: Resend 2.0 (async via BullMQ queue)
 - **Logging**: Winston 3.10 (structured logging)
 - **Security**: AES-256-GCM encryption for credentials
 - **Hot Reload**: Nodemon 3.1 + @swc-node/register 1.11 + @swc/core 1.13
@@ -37,14 +37,14 @@ Template base para alunos do **Fábrica de Negócios Digitais (FND)** iniciarem 
 ```
 fnd-easyflow-template/
 ├── apps/
-│   ├── backend/         # @fnd/api - NestJS API (serverless)
-│   ├── workers/         # @fnd/workers-app - Vercel Functions (thin wrappers)
+│   ├── backend/         # @fnd/api - NestJS API (API + Workers híbrido)
 │   └── frontend/        # @fnd/frontend - React App (DTOs mirrored in types/)
-└── libs/
-    ├── domain/          # @fnd/domain - Domain entities, enums, types
-    ├── backend/         # @fnd/backend - Service interfaces
-    ├── workers/         # @fnd/workers - Pure handlers (serverless logic)
-    └── app-database/    # @fnd/database - Data access (PostgreSQL, uses domain entities)
+├── libs/
+│   ├── domain/          # @fnd/domain - Domain entities, enums, types
+│   ├── backend/         # @fnd/backend - Service interfaces
+│   └── app-database/    # @fnd/database - Data access (PostgreSQL, uses domain entities)
+└── infra/
+    └── docker-compose.yml  # Ambiente local (PostgreSQL, Redis, PgAdmin, Redis Insight)
 ```
 
 ## 🔧 Convenções de Nomenclatura
@@ -95,34 +95,49 @@ export interface IUserRepository {
 
 **Por quê?** Database layer NEVER depends on DTOs (outer layer). Use domain entities exclusively. DTOs live in API modules (`apps/backend/src/api/modules/[module]/dtos/`).
 
-## 🚀 Serverless Architecture
+## 🚀 Railway Hybrid Architecture
 
-### Stack Serverless
-- **Vercel Functions**: API NestJS + Workers
-- **Upstash QStash**: Async job queue (substitui BullMQ)
+### Stack de Deploy
+- **Railway**: Backend Docker (API + Workers)
+- **BullMQ + Redis**: Async job queue e cache
 - **Supabase PostgreSQL**: Database
 - **Resend**: Email transacional
+- **Cloudflare Pages**: Frontend estático
 
-### Separação de Responsabilidades
+### Modos de Execução
+O backend suporta três modos via `NODE_MODE`:
+
 ```
-apps/backend/     → NestJS API (endpoints REST)
-apps/workers/     → Thin wrappers (entrypoints serverless, ~30-40 linhas cada)
-libs/workers/     → Handlers puros (lógica de negócio, ~50-100 linhas cada)
+NODE_MODE=api       → Apenas HTTP API (escalar API independentemente)
+NODE_MODE=workers   → Apenas Workers BullMQ (escalar workers independentemente)
+NODE_MODE=hybrid    → API + Workers (modo padrão, deploy simplificado)
+```
+
+### Arquitetura Híbrida
+```
+apps/backend/src/
+├── main.ts                 # Dispatcher (lê NODE_MODE e roteia)
+├── main.api.ts             # Entrypoint API only
+├── main.workers.ts         # Entrypoint Workers only
+├── main.hybrid.ts          # Entrypoint Hybrid (padrão)
+├── api/modules/            # Módulos NestJS (Controllers, Services, CQRS)
+└── workers/                # Workers BullMQ (email, audit, stripe-webhook)
 ```
 
 ### Benefícios
-- **Bundle Size Reduzido**: Workers ~3-5MB vs NestJS full ~15MB
-- **Cold Start Rápido**: ~800ms-1.5s vs ~2-5s com NestJS DI
-- **Reusabilidade**: Handlers puros podem ser chamados pela API se necessário
-- **Testabilidade**: Handlers puros = mock apenas o context
-- **Deploy Simplificado**: `git push` deploya tudo
+- **Flexibilidade**: Escalar API e Workers independentemente quando necessário
+- **Simplicidade**: Modo hybrid para desenvolvimento e deploys simples
+- **Persistência**: Jobs sobrevivem a restarts (Redis)
+- **Observabilidade**: Redis Insight para monitorar filas
+- **Deploy Simplificado**: `git push` → Railway build + deploy automático
 
 ## 🎯 Backend Architecture
 
-### Serverless Bootstrap
-**Arquivo**: `apps/backend/src/index.ts`
+### Hybrid Bootstrap
+**Arquivo**: `apps/backend/src/main.ts`
 
-Backend runs as Vercel serverless function. For local development, use `apps/backend/src/local.ts`.
+Backend dispatcher que lê `NODE_MODE` e inicializa o modo apropriado (api/workers/hybrid).
+Para desenvolvimento local, use `apps/backend/src/local.ts` que inicia em modo hybrid por padrão.
 
 ### Feature-First Module Structure
 ```
@@ -205,22 +220,24 @@ import { AccountCreatedEvent } from './events';
 - `DATABASE` → Kysely instance (PostgreSQL)
 - Todos os Repositories (User, Account, Workspace, WorkspaceUser, AuditLog, Subscription, Plan, PlanPrice, PaymentHistory)
 
-### Workers Architecture (Serverless)
+### Workers Architecture (BullMQ)
 
-**Pasta**: `apps/workers/` (thin wrappers) + `libs/workers/` (pure handlers)
+**Pasta**: `apps/backend/src/workers/`
 
-**Handlers Puros** (libs/workers/src/handlers/):
-- `send-email.handler.ts` - Email sending logic (Resend)
-- `process-audit.handler.ts` - Audit log persistence
-- `stripe-webhook.handler.ts` - Stripe webhook processing
+**BullMQ Workers** (com NestJS DI):
+- `email.worker.ts` - Processa fila `email` (envia emails via Resend)
+- `audit.worker.ts` - Processa fila `audit` (persiste audit logs)
+- `stripe-webhook.worker.ts` - Processa fila `stripe-webhook` (webhooks Stripe)
 
-**Vercel Functions** (apps/workers/):
-- `send-email.ts` - Vercel Function wrapper (~30 lines)
-- `process-audit.ts` - Vercel Function wrapper (~30 lines)
-- `stripe-webhook.ts` - Vercel Function wrapper (~40 lines)
+**Workers Module**:
+- `workers.module.ts` - Módulo NestJS que agrupa todos os workers
 
-**Factory**:
-- `create-handler-context.ts` - Creates context without NestJS DI
+**Adapters BullMQ**:
+- `bullmq-queue.adapter.ts` - Implementa `IQueueService` com BullMQ
+- `bullmq-event-publisher.adapter.ts` - Implementa `IEventPublisher` com BullMQ
+
+**Redis Provider**:
+- `redis.provider.ts` - Factory para conexão Redis compartilhada (IORedis)
 
 ### Backend API Modules
 **Pasta**: `apps/backend/src/api/modules/`
@@ -252,14 +269,15 @@ import { AccountCreatedEvent } from './events';
 
 ### 2. Event-Driven Architecture
 **Componentes**:
-- Events são publicados via Upstash QStash
-- Workers processam eventos de forma assíncrona
+- Events são publicados via BullMQ (Redis)
+- Workers BullMQ processam eventos de forma assíncrona
 
 **Fluxo**:
 - **Domain Events**: Internos ao módulo, síncronos
-- **Integration Events**: Entre módulos, assíncronos via QStash
-- **Handlers idempotentes**: Podem ser executados múltiplas vezes
+- **Integration Events**: Entre módulos, assíncronos via BullMQ
+- **Handlers idempotentes**: Podem ser executados múltiplas vezes (retry-safe)
 - **Audit Processing**: Eventos são persistidos via worker dedicado
+- **Job Persistence**: Jobs sobrevivem a restarts (armazenados no Redis)
 
 ### 3. Repository Pattern
 - **Interface**: `I[Entity]Repository` (@fnd/database)
@@ -351,10 +369,12 @@ SUPABASE_PUBLISHABLE_KEY=sb_publishable_...  # Frontend-safe, also used in backe
 SUPABASE_SECRET_KEY=sb_secret_...  # Backend only - NEVER expose in frontend!
 SUPABASE_WEBHOOK_SECRET=your-webhook-secret-here  # For webhook signature validation
 
-# Upstash QStash (serverless queue)
-QSTASH_TOKEN=your-qstash-token
-QSTASH_CURRENT_SIGNING_KEY=your-current-signing-key
-QSTASH_NEXT_SIGNING_KEY=your-next-signing-key
+# Redis (BullMQ job queue)
+REDIS_URL=redis://localhost:6379  # Local development
+# REDIS_URL=redis://user:pass@host:port  # Railway production
+
+# Node Mode (execution mode)
+NODE_MODE=hybrid  # api | workers | hybrid
 
 # API
 API_PORT=3001
@@ -376,9 +396,6 @@ FRONTEND_URL=http://localhost:3000
 # Logging
 LOG_LEVEL=info  # error | warn | info | debug
 
-# Vercel (auto-set by Vercel)
-VERCEL_URL=  # Auto-set by Vercel
-
 # Stripe
 STRIPE_SECRET_KEY=sk_test_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
@@ -389,12 +406,15 @@ FEATURES_WORKSPACE_SWITCHING_ENABLED=true
 ```
 
 ### Docker Services (docker-compose.yml)
+Ambiente local completo em `infra/docker-compose.yml`:
 ```yaml
 postgres:15-alpine    # Port 5432 (Main PostgreSQL database)
-cloudbeaver:latest    # Port 8080 (Universal DB manager)
+redis:7-alpine        # Port 6379 (BullMQ job queue)
+redis-insight:latest  # Port 8001 (Redis monitoring)
+pgadmin4:latest       # Port 5050 (PostgreSQL admin)
 ```
 
-**Removidos**: Redis (não necessário com serverless), RabbitMQ (não necessário)
+**Benefícios**: Ambiente local completo sem dependências externas
 
 ## 📜 Scripts Disponíveis
 
@@ -409,7 +429,8 @@ npm run lint           # Lint all packages
 npm run typecheck      # Type check all packages
 
 # Deploy
-vercel --prod          # Deploy to Vercel
+git push origin main   # Railway auto-deploy (backend)
+# Cloudflare Pages auto-deploy (frontend)
 ```
 
 ### Database Scripts
@@ -566,14 +587,17 @@ const apiKey = this.config.getStripeSecretKey();
 - `tsconfig.base.json` - shared TypeScript config
 
 ### Backend Core
-- `apps/backend/src/index.ts` - Serverless bootstrap (Vercel)
+- `apps/backend/src/main.ts` - Dispatcher (NODE_MODE routing)
+- `apps/backend/src/main.api.ts` - API entrypoint
+- `apps/backend/src/main.workers.ts` - Workers entrypoint
+- `apps/backend/src/main.hybrid.ts` - Hybrid entrypoint (padrão)
 - `apps/backend/src/local.ts` - Local development server
 - `apps/backend/src/shared/shared.module.ts` - Shared services
 
-### Workers
-- `apps/workers/` - Vercel Functions (thin wrappers)
-- `libs/workers/src/handlers/` - Pure handlers (business logic)
-- `libs/workers/src/create-handler-context.ts` - Context factory
+### Workers & Adapters
+- `apps/backend/src/workers/` - BullMQ workers (email, audit, stripe-webhook)
+- `apps/backend/src/shared/adapters/` - BullMQ adapters (queue, event publisher)
+- `apps/backend/src/shared/providers/redis.provider.ts` - Redis connection factory
 
 ### Libs (Layers)
 - `libs/domain/src/index.ts` - Domain barrel export (entities, enums, types)

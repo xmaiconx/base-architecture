@@ -1,2 +1,3 @@
-export { QStashQueueAdapter } from './qstash-queue.adapter';
-export { QStashEventPublisher } from './qstash-event-publisher.adapter';
+// BullMQ adapters
+export { BullMQQueueAdapter } from './bullmq-queue.adapter';
+export { BullMQEventPublisher } from './bullmq-event-publisher.adapter';

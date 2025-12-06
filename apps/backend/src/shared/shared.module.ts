@@ -12,6 +12,7 @@ import {
   IAuditLogRepository,
   IPlanRepository,
   ISubscriptionRepository,
+  IWebhookEventRepository,
   UserRepository,
   AccountRepository,
   WorkspaceRepository,
@@ -19,6 +20,7 @@ import {
   AuditLogRepository,
   PlanRepository,
   SubscriptionRepository,
+  WebhookEventRepository,
   createDatabase
 } from '@fnd/database';
 import { ResendEmailService } from './services/resend-email.service';
@@ -28,7 +30,8 @@ import { EventBrokerService } from './services/event-broker.service';
 import { ConfigurationService } from './services/configuration.service';
 import { StartupLoggerService } from './services/startup-logger.service';
 import { SupabaseService } from './services/supabase.service';
-import { QStashQueueAdapter, QStashEventPublisher } from './adapters';
+import { BullMQQueueAdapter, BullMQEventPublisher } from './adapters';
+import { RedisProvider } from './providers/redis.provider';
 
 const EMAIL_SERVICE_TOKEN = 'IEmailService';
 const LOGGER_SERVICE_TOKEN = 'ILoggerService';
@@ -40,12 +43,14 @@ const WORKSPACE_USER_REPOSITORY_TOKEN = 'IWorkspaceUserRepository';
 const AUDIT_LOG_REPOSITORY_TOKEN = 'IAuditLogRepository';
 const PLAN_REPOSITORY_TOKEN = 'IPlanRepository';
 const SUBSCRIPTION_REPOSITORY_TOKEN = 'ISubscriptionRepository';
+const WEBHOOK_EVENT_REPOSITORY_TOKEN = 'IWebhookEventRepository';
 const EMAIL_QUEUE_SERVICE_TOKEN = 'IEmailQueueService';
 const EVENT_BROKER_TOKEN = 'IEventBroker';
 const CONFIGURATION_SERVICE_TOKEN = 'IConfigurationService';
 const SUPABASE_SERVICE_TOKEN = 'ISupabaseService';
 const QUEUE_SERVICE_TOKEN = 'IQueueService';
 const EVENT_PUBLISHER_TOKEN = 'IEventPublisher';
+const REDIS_CONNECTION_TOKEN = 'REDIS_CONNECTION';
 
 @Module({
   imports: [ConfigModule, CqrsModule],
@@ -106,6 +111,11 @@ const EVENT_PUBLISHER_TOKEN = 'IEventPublisher';
       inject: [DATABASE_TOKEN],
     },
     {
+      provide: WEBHOOK_EVENT_REPOSITORY_TOKEN,
+      useFactory: (db) => new WebhookEventRepository(db),
+      inject: [DATABASE_TOKEN],
+    },
+    {
       provide: EMAIL_QUEUE_SERVICE_TOKEN,
       useClass: EmailQueueService,
     },
@@ -121,13 +131,14 @@ const EVENT_PUBLISHER_TOKEN = 'IEventPublisher';
       provide: SUPABASE_SERVICE_TOKEN,
       useClass: SupabaseService,
     },
+    RedisProvider,
     {
       provide: QUEUE_SERVICE_TOKEN,
-      useClass: QStashQueueAdapter,
+      useClass: BullMQQueueAdapter,
     },
     {
       provide: EVENT_PUBLISHER_TOKEN,
-      useClass: QStashEventPublisher,
+      useClass: BullMQEventPublisher,
     },
     StartupLoggerService,
   ],
@@ -142,12 +153,14 @@ const EVENT_PUBLISHER_TOKEN = 'IEventPublisher';
     AUDIT_LOG_REPOSITORY_TOKEN,
     PLAN_REPOSITORY_TOKEN,
     SUBSCRIPTION_REPOSITORY_TOKEN,
+    WEBHOOK_EVENT_REPOSITORY_TOKEN,
     EMAIL_QUEUE_SERVICE_TOKEN,
     EVENT_BROKER_TOKEN,
     CONFIGURATION_SERVICE_TOKEN,
     SUPABASE_SERVICE_TOKEN,
     QUEUE_SERVICE_TOKEN,
     EVENT_PUBLISHER_TOKEN,
+    REDIS_CONNECTION_TOKEN,
     StartupLoggerService,
   ],
 })

@@ -1,0 +1,65 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: fnd-postgres
+    environment:
+      POSTGRES_DB: fnd_easyflow
+      POSTGRES_USER: fnd_user
+      POSTGRES_PASSWORD: fnd_pass
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - fnd
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U fnd_user -d fnd_easyflow']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: fnd-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - fnd
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    container_name: fnd-redis-insight
+    ports:
+      - '8001:8001'
+    networks:
+      - fnd
+    depends_on:
+      - redis
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: fnd-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@fnd.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - '5050:80'
+    networks:
+      - fnd
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  fnd:
+    driver: bridge

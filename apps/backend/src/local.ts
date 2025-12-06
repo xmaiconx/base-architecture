@@ -1,14 +1,20 @@
-import { api } from './api/main';
+/**
+ * Local Development Entry Point
+ *
+ * Sets NODE_MODE=hybrid by default for local development.
+ * This runs both API and Workers in a single process for convenience.
+ *
+ * To run in specific modes:
+ * - API only: NODE_MODE=api npm run dev:api
+ * - Workers only: NODE_MODE=workers npm run dev:api
+ * - Hybrid (default): npm run dev:api
+ */
 
-async function bootstrap() {
-  try {
-    console.log('🚀 Starting FND EasyFlow API...');
-    await api();
-    console.log('✅ FND EasyFlow API running successfully!');
-  } catch (error) {
-    console.error('❌ Failed to start FND EasyFlow API:', error);
-    process.exit(1);
-  }
+// Set default mode for local development
+if (!process.env.NODE_MODE) {
+  process.env.NODE_MODE = 'hybrid';
+  console.log('📝 NODE_MODE not set, defaulting to "hybrid" for local development');
 }
 
-bootstrap();
+// Import and run main dispatcher
+import('./main');

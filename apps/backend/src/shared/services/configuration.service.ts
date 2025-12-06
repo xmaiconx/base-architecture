@@ -111,36 +111,23 @@ export class ConfigurationService implements IConfigurationService {
     return this.configService.get<string>('STRIPE_CANCEL_URL') || `${this.getFrontendUrl()}/settings/billing?canceled=true`;
   }
 
-  // QStash configuration methods
-  getQStashToken(): string {
-    const token = this.configService.get<string>('QSTASH_TOKEN');
-    if (!token) {
-      throw new Error('QSTASH_TOKEN is required for serverless queue functionality');
+  // Redis configuration methods
+  getRedisUrl(): string {
+    const url = this.configService.get<string>('REDIS_URL');
+    if (!url) {
+      throw new Error('REDIS_URL is required for BullMQ queue functionality');
     }
-    return token;
+    return url;
   }
 
-  getQStashCurrentSigningKey(): string {
-    const key = this.configService.get<string>('QSTASH_CURRENT_SIGNING_KEY');
-    if (!key) {
-      throw new Error('QSTASH_CURRENT_SIGNING_KEY is required for webhook signature verification');
+  // Node mode configuration
+  getNodeMode(): 'api' | 'workers' | 'hybrid' {
+    const mode = this.configService.get<string>('NODE_MODE') || 'hybrid';
+
+    if (mode !== 'api' && mode !== 'workers' && mode !== 'hybrid') {
+      throw new Error('NODE_MODE must be one of: api, workers, hybrid');
     }
-    return key;
-  }
 
-  getQStashNextSigningKey(): string {
-    const key = this.configService.get<string>('QSTASH_NEXT_SIGNING_KEY');
-    if (!key) {
-      throw new Error('QSTASH_NEXT_SIGNING_KEY is required for webhook signature verification');
-    }
-    return key;
-  }
-
-  getVercelUrl(): string {
-    return this.configService.get<string>('VERCEL_URL') || 'http://localhost:3001';
-  }
-
-  getWorkerBaseUrl(): string {
-    return `${this.getVercelUrl()}/api/workers`;
+    return mode as 'api' | 'workers' | 'hybrid';
   }
 }

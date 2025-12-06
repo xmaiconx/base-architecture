@@ -13,9 +13,9 @@ Este template inclui:
 - ✅ Multi-tenancy completo (workspaces)
 - ✅ Autenticação via Supabase
 - ✅ Sistema de billing com Stripe
-- ✅ Pipeline de mensagens com IA
+- ✅ Processamento assíncrono com BullMQ + Redis
 - ✅ Webhooks para integrações externas
-- ✅ Workers assíncronos com BullMQ
+- ✅ Workers híbridos (API + Background jobs)
 - ✅ Logs de auditoria
 
 ## 🚀 Quick Start
@@ -23,11 +23,12 @@ Este template inclui:
 ### Pré-requisitos
 
 - Node.js 18+ e npm 9+
+- Docker & Docker Compose (para ambiente local)
 - PostgreSQL 15+ (ou Supabase)
+- Redis 7+ (incluído no docker-compose)
 - Conta Supabase (para autenticação)
 - Conta Stripe (para billing)
 - Conta Resend (para emails)
-- Conta Upstash (para QStash - serverless queue)
 
 ### Instalação
 
@@ -42,23 +43,42 @@ cd fnd-easyflow-template
 npm install
 ```
 
-3. **Configure as variáveis de ambiente:**
-
-Crie um arquivo `.env` na raiz do projeto:
+3. **Inicie o ambiente Docker:**
 ```bash
-# Database (Supabase PostgreSQL)
-DATABASE_URL=postgresql://user:pass@host:port/db
+cd infra
+docker-compose up -d
+cd ..
+```
+
+Isso inicia:
+- PostgreSQL (porta 5432)
+- Redis (porta 6379)
+- PgAdmin (porta 5050)
+- Redis Insight (porta 8001)
+
+4. **Configure as variáveis de ambiente:**
+
+Copie o `.env.example` e configure:
+```bash
+cp apps/backend/.env.example apps/backend/.env
+```
+
+Variáveis principais:
+```bash
+# Database (Docker local ou Supabase)
+DATABASE_URL=postgresql://fnd_user:fnd_pass@localhost:5432/fnd_easyflow
+
+# Redis (Docker local ou Railway)
+REDIS_URL=redis://localhost:6379
+
+# Node Mode
+NODE_MODE=hybrid  # api | workers | hybrid
 
 # Supabase Auth
 SUPABASE_URL=https://[project-ref].supabase.co
 SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 SUPABASE_SECRET_KEY=sb_secret_...
 SUPABASE_WEBHOOK_SECRET=your-webhook-secret
-
-# Upstash QStash
-QSTASH_TOKEN=your-qstash-token
-QSTASH_CURRENT_SIGNING_KEY=your-current-signing-key
-QSTASH_NEXT_SIGNING_KEY=your-next-signing-key
 
 # Stripe
 STRIPE_SECRET_KEY=sk_test_xxx
@@ -77,30 +97,28 @@ RESEND_FROM_EMAIL=noreply@domain.com
 
 # Frontend
 FRONTEND_URL=http://localhost:3000
-
-# Feature Flags
-FEATURES_WORKSPACE_ENABLED=true
-FEATURES_WORKSPACE_SWITCHING_ENABLED=true
 ```
 
-4. **Execute as migrações do banco:**
+5. **Execute as migrações do banco:**
 ```bash
 npm run migrate:latest
 ```
 
-5. **Inicie o ambiente de desenvolvimento:**
+6. **Inicie o ambiente de desenvolvimento:**
 ```bash
 # Inicia API + Frontend em paralelo
 npm run dev
 
 # OU inicie separadamente:
-npm run dev:api      # Backend API apenas (local development)
+npm run dev:api      # Backend em modo hybrid (API + Workers)
 cd apps/frontend && npm run dev  # Frontend apenas
 ```
 
-6. **Acesse a aplicação:**
+7. **Acesse as ferramentas:**
 - Frontend: http://localhost:3000
 - API: http://localhost:3001
+- PgAdmin: http://localhost:5050 (admin@fnd.com / admin)
+- Redis Insight: http://localhost:8001
 
 ## 📦 Stack Tecnológica
 
@@ -108,11 +126,12 @@ cd apps/frontend && npm run dev  # Frontend apenas
 - **NestJS 10** - Framework Node.js com dependency injection
 - **PostgreSQL 15** - Banco de dados relacional (Supabase)
 - **Kysely** - Query builder type-safe
-- **Upstash QStash** - Serverless queue para async jobs
+- **BullMQ + Redis 7** - Job queue e cache para async jobs
 - **Supabase** - Autenticação e gerenciamento de usuários
 - **Stripe** - Pagamentos e assinaturas
 - **Winston** - Logging estruturado
-- **Vercel** - Deploy serverless
+- **Railway** - Deploy Docker (backend)
+- **Cloudflare Pages** - Deploy estático (frontend)
 
 ### Frontend
 - **React 18** - Biblioteca UI
@@ -126,23 +145,23 @@ cd apps/frontend && npm run dev  # Frontend apenas
 
 ### Infraestrutura
 - **Turbo** - Build system para monorepo
-- **Docker Compose** - Orquestração de serviços locais
-- **CloudBeaver** - GUI para banco de dados
-- **Vercel** - Serverless deployment
+- **Docker Compose** - Orquestração de serviços locais (PostgreSQL, Redis, PgAdmin, Redis Insight)
+- **Railway** - Deploy backend (Docker)
+- **Cloudflare Pages** - Deploy frontend (static)
 
 ## 📂 Estrutura do Projeto
 
 ```
 fnd-easyflow-template/
 ├── apps/
-│   ├── backend/       # API NestJS (serverless)
-│   ├── workers/       # Vercel Functions (thin wrappers)
+│   ├── backend/       # API NestJS (API + Workers híbrido)
 │   └── frontend/      # React App
 ├── libs/
 │   ├── domain/        # Entidades e regras de negócio
 │   ├── backend/       # Interfaces de serviços
-│   ├── workers/       # Pure handlers (serverless logic)
 │   └── app-database/  # Repositórios e migrations
+├── infra/
+│   └── docker-compose.yml  # Ambiente local (PostgreSQL, Redis, etc.)
 ├── docs/              # Documentação do projeto
 └── .claude/           # Skills e comandos para Claude Code
 ```
@@ -167,7 +186,8 @@ npm run seed:run         # Popular banco com dados
 npm run clean            # Remove dist/ e cache
 
 # Deploy
-vercel --prod            # Deploy to Vercel
+git push origin main     # Railway auto-deploy (backend)
+                         # Cloudflare Pages auto-deploy (frontend)
 ```
 
 ## 📖 Documentação Completa
