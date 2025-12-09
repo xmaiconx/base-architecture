@@ -381,12 +381,18 @@ Always include this reference at the end:
 | `/fix` | Corrige bug durante dev | Bug encontrado durante desenvolvimento |
 | `/hotfix` | Correção urgente | Bug crítico em produção |
 
+### Segurança
+
+| Comando | Descrição | Quando Usar |
+|---------|-----------|-------------|
+| `/security` | Auditoria de segurança (OWASP) | Validar codebase antes de deploy |
+
 ### Utilitários
 
 | Comando | Descrição |
 |---------|-----------|
 | `/help` | Este guia |
-| `/brainstorm` | Conversar sobre ideias e explorar possibilidades (sem alterar código) |
+| `/brainstorm` | Conversar sobre ideias e gerar documento de discussão |
 | `/question` | Tire dúvidas sobre a feature atual (sem alterar código) |
 
 ---
@@ -420,9 +426,14 @@ Always include this reference at the end:
 /hotfix → /done → deploy
 ```
 
+### Auditoria de Segurança
+```
+/security → (findings?) → /feature (correções) → /dev → /done
+```
+
 ### Exploração de Ideias
 ```
-/brainstorm → (decide criar feature?) → /feature
+/brainstorm → (documentar?) → docs/brainstorm/*.md → /feature
 ```
 
 ---
@@ -435,7 +446,8 @@ Always include this reference at the end:
 4. **Uma feature por vez** - Complete antes de começar outra
 5. **Use /autopilot** - Para implementação autônoma sem precisar acompanhar
 6. **Documente sempre** - Os comandos geram documentação automática
-7. **Use /help** - Quando estiver perdido, volte aqui!
+7. **Rode /security antes de deploy** - Auditoria OWASP evita vulnerabilidades
+8. **Use /help** - Quando estiver perdido, volte aqui!
 
 ---
 
@@ -799,12 +811,66 @@ If user asks "o que o /feature faz?" or similar, provide detailed explanation:
 **Quer executar agora?** Digite `/hotfix`
 ```
 
+#### About `/security`
+
+```markdown
+## 🔒 Comando `/security`
+
+**Propósito:** Auditoria de segurança do codebase baseada no OWASP Top 10.
+
+### O que acontece quando você executa:
+
+1. **Carrega contexto:**
+   - Lê checklist de segurança (`docs/instructions/security.md`)
+   - Entende arquitetura do projeto
+
+2. **Análise de vulnerabilidades:**
+   - Injection (SQL, Command)
+   - Broken Authentication
+   - Sensitive Data Exposure
+   - Broken Access Control
+   - Security Misconfiguration
+   - XSS
+   - Insecure Dependencies
+   - SSRF
+   - Mass Assignment
+
+3. **Gera relatório:**
+   - `docs/security/audit-YYYY-MM-DD.md`
+   - Findings organizados por severidade
+   - Recomendações de correção
+
+### Uso
+```bash
+/security                    # Audita codebase completo
+/security apps/backend       # Audita apenas o backend
+/security apps/frontend      # Audita apenas o frontend
+```
+
+### Resultado
+- Relatório de auditoria em `docs/security/`
+- NÃO corrige automaticamente (apenas documenta)
+- Use o relatório como input para criar features de correção
+
+### Quando usar
+- Antes de deploy para produção
+- Auditoria periódica (mensal/trimestral)
+- Após adicionar integrações externas
+- Quando quiser validar segurança geral
+
+### Diferença do `/review`:
+- `/review` = valida segurança por feature (durante dev)
+- `/security` = auditoria completa do codebase (proativa)
+
+**Quer executar agora?** Digite `/security`
+```
+
 #### About `/brainstorm`
 
 ```markdown
 ## 💡 Comando `/brainstorm`
 
-**Propósito:** Conversar livremente sobre ideias, explorar possibilidades e entender o projeto.
+**Propósito:** Conversar livremente sobre ideias, explorar possibilidades e documentar discussões valiosas.
 
 ### O que acontece quando você executa:
 
@@ -819,23 +885,30 @@ If user asks "o que o /feature faz?" or similar, provide detailed explanation:
    - Avalia viabilidade técnica
    - Compara opções
 
-3. **Orienta próximos passos:**
-   - Se surgir uma feature → sugere `/feature`
+3. **Documenta a discussão (opcional):**
+   - Oferece criar documento resumo
+   - Gera `docs/brainstorm/YYYY-MM-DD-[topic].md`
+   - Documento serve como input para `/feature`
+
+4. **Orienta próximos passos:**
+   - Se surgir uma feature → sugere documentar + `/feature`
    - Se encontrar bug → sugere `/fix`
 
 ### Resultado
 - Respostas e insights sobre o projeto
-- NENHUMA alteração no código
+- Documento de brainstorm (opcional) em `docs/brainstorm/`
+- NÃO altera código da aplicação
 
 ### Quando usar
 - Quer explorar uma ideia antes de formalizar
 - Tem dúvidas sobre o que é possível
 - Quer entender o que já existe
 - Antes de decidir criar uma feature
+- Quer documentar uma discussão para referência futura
 
 ### Diferença do `/question`:
-- `/question` = foco na feature ATUAL
-- `/brainstorm` = conversa LIVRE sobre qualquer tema
+- `/question` = foco na feature ATUAL, nunca documenta
+- `/brainstorm` = conversa LIVRE + pode gerar documento
 
 **Quer executar agora?** Digite `/brainstorm`
 ```

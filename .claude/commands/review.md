@@ -134,17 +134,82 @@ From `implementation.md`, extract and **read ALL files** created/modified.
 
 ---
 
-## Phase 4: Security & Multi-Tenancy
+## Phase 4: Security Validation
 
-### 4.1 Account Isolation
-- **EVERY query MUST filter by `account_id`** (if multi-tenancy is defined in CLAUDE.md)
-- Controllers validate ownership
-- No cross-tenant data leaks
+### Step 1: Load Security Checklist
 
-### 4.2 Security
-- No sensitive data in logs
-- Credentials encrypted (if encryption service exists)
-- Input validation via DTOs with decorators
+**⚠️ OBRIGATÓRIO:** Leia `docs/instructions/security.md` ANTES de validar segurança.
+
+```bash
+cat docs/instructions/security.md
+```
+
+### Step 2: Validate Against OWASP Checklist
+
+**Para CADA arquivo criado/modificado, verificar:**
+
+| Categoria | Verificação | Severidade |
+|-----------|-------------|------------|
+| **Injection** | Queries parametrizadas? Inputs validados via class-validator? | 🔴 Critical |
+| **Authentication** | JWT validado? Guards aplicados em rotas protegidas? | 🔴 Critical |
+| **Data Exposure** | Credenciais via IEncryptionService? Logs sem dados sensíveis? | 🔴 Critical |
+| **Access Control** | Filtro `account_id` em TODAS as queries? Ownership validado? | 🔴 Critical |
+| **Misconfiguration** | CORS restrito? Secrets via env vars? | 🟡 High |
+| **XSS** | Outputs sanitizados no frontend? URLs validadas? | 🟡 High |
+| **Dependencies** | npm audit sem critical/high? | 🟡 High |
+| **Mass Assignment** | DTOs explícitos? Sem spread de body direto? | 🟠 Medium |
+
+### Step 3: Multi-Tenancy Verification
+
+- **EVERY query MUST filter by `account_id`** (se multi-tenancy definido no CLAUDE.md)
+- Controllers validam ownership via JWT (NUNCA via body)
+- Não há vazamento de dados entre tenants
+- `account_id` extraído do token, não do request
+
+### Step 4: Document Security Findings
+
+**Se encontrar violações:**
+1. Classificar severidade (🔴🟡🟠🟢)
+2. **Aplicar correção automaticamente** (não apenas reportar)
+3. Documentar no relatório de review
+
+**Regras de Bloqueio:**
+- 🔴 **Critical**: BLOQUEIA merge até correção
+- 🟡 **High**: Corrigir antes do merge
+- 🟠 **Medium**: Pode mergear, corrigir no próximo sprint
+- 🟢 **Low**: Backlog
+
+### Security Checklist Rápido
+
+```markdown
+### Injection
+- [ ] Queries parametrizadas (sem concatenação de strings)
+- [ ] Inputs validados com class-validator decorators
+
+### Authentication
+- [ ] Guards aplicados em rotas protegidas
+- [ ] Tokens não expostos em logs/responses
+
+### Data Exposure
+- [ ] Credenciais criptografadas via IEncryptionService
+- [ ] Logs sem dados sensíveis (senhas, tokens, API keys)
+
+### Access Control
+- [ ] Queries filtram por account_id
+- [ ] Ownership validado antes de operações
+- [ ] account_id do JWT (não do body)
+
+### Configuration
+- [ ] CORS restrito (não usar origin: '*' em produção)
+- [ ] Secrets via environment variables
+
+### XSS
+- [ ] Outputs sanitizados
+- [ ] URLs validadas antes de usar em href/src
+
+### Dependencies
+- [ ] npm audit sem vulnerabilidades critical/high
+```
 
 ---
 
