@@ -291,7 +291,47 @@ O documento pode ser usado como input para `/feature` se decidir implementar alg
 
 ### Document Generation
 
-**Create:** `docs/brainstorm/YYYY-MM-DD-[topic-slug].md`
+**CRITICAL:** O documento DEVE ser criado em `docs/brainstorm/` e NÃO em `docs/features/`.
+
+### Padrão de Nomenclatura (Histórico)
+
+**Formato:** `docs/brainstorm/YYYY-MM-DD-[topic-slug].md`
+
+| Componente | Descrição | Exemplo |
+|------------|-----------|---------|
+| `YYYY` | Ano com 4 dígitos | 2025 |
+| `MM` | Mês com 2 dígitos | 01, 12 |
+| `DD` | Dia com 2 dígitos | 05, 28 |
+| `[topic-slug]` | Tópico em kebab-case (lowercase, hífens) | `notificacoes-push`, `relatorios-vendas` |
+
+**Exemplos de estrutura:**
+```
+docs/brainstorm/
+├── 2025-01-15-notificacoes-email.md
+├── 2025-01-20-dashboard-metricas.md
+├── 2025-02-03-integracao-whatsapp.md
+├── 2025-02-10-relatorios-vendas.md
+└── 2025-02-10-exportar-dados.md    # Mesmo dia, tópicos diferentes
+```
+
+**Regras de nomenclatura:**
+- ✅ CORRETO: `docs/brainstorm/2025-02-10-notificacoes-push.md`
+- ❌ ERRADO: `docs/features/F[XXXX]-[name]/` (isso é para o comando `/feature`)
+- ❌ ERRADO: `docs/brainstorm/notificacoes.md` (sem data)
+- ❌ ERRADO: `docs/brainstorm/10-02-2025-notificacoes.md` (formato de data errado)
+
+**Benefícios do histórico por data:**
+- Ordem cronológica natural ao listar arquivos
+- Fácil identificar quando cada ideia surgiu
+- Permite múltiplos brainstorms no mesmo dia
+- Histórico de evolução do pensamento sobre o produto
+
+---
+
+**IMPORTANTE:** O documento deve ser 100% focado em NEGÓCIO e USUÁRIO, sem jargões técnicos.
+- Descrever necessidades, problemas e desejos do usuário
+- Usar linguagem que qualquer pessoa entenda
+- Focar no "o quê" e "por quê", nunca no "como implementar"
 
 ```markdown
 # Brainstorm: [Título do Tópico]
@@ -301,73 +341,81 @@ O documento pode ser usado como input para `/feature` se decidir implementar alg
 
 ---
 
-## Contexto
+## Problema ou Necessidade
 
-[O que motivou essa discussão - problema, ideia, dúvida inicial]
+[Descrever o problema real que o usuário enfrenta ou a necessidade que surgiu]
 
----
+**Quem é afetado:** [Tipo de usuário - ex: administradores, clientes finais, etc.]
 
-## Pontos Discutidos
-
-### [Tópico 1]
-[Resumo do que foi discutido sobre este tópico]
-
-### [Tópico 2]
-[Resumo do que foi discutido sobre este tópico]
-
-### [Tópico N]
-[Resumo do que foi discutido sobre este tópico]
+**Situação atual:** [Como o usuário resolve isso hoje, se resolve]
 
 ---
 
-## Descobertas & Insights
+## O que o Usuário Quer
 
-- **[Insight 1]:** [Descrição]
-- **[Insight 2]:** [Descrição]
-- **[Insight N]:** [Descrição]
+[Descrever em linguagem simples o que o usuário espera que aconteça]
 
----
+### Cenário Ideal
+[Descrever como seria a experiência perfeita do ponto de vista do usuário]
 
-## Decisões Tomadas
-
-| Decisão | Justificativa |
-|---------|---------------|
-| [Decisão 1] | [Por que foi decidido assim] |
-| [Decisão 2] | [Por que foi decidido assim] |
+### Exemplos de Uso
+- **Exemplo 1:** [Situação prática do dia-a-dia]
+- **Exemplo 2:** [Outra situação prática]
 
 ---
 
-## Questões em Aberto
+## Discovery Inicial
 
-- [ ] [Questão que ainda precisa ser respondida]
-- [ ] [Outra questão pendente]
+### O que já existe no sistema
+- [Funcionalidade existente 1 - em linguagem simples]
+- [Funcionalidade existente 2 - em linguagem simples]
 
----
+### O que precisaria ser criado
+- [Necessidade 1 - descrição do ponto de vista do usuário]
+- [Necessidade 2 - descrição do ponto de vista do usuário]
 
-## Próximos Passos Sugeridos
-
-### Se virar Feature:
-- **Comando:** `/feature`
-- **Input sugerido:** [Descrição da feature baseada na conversa]
-
-### Se precisar mais investigação:
-- [O que investigar]
-- [Onde buscar informações]
-
-### Se for melhoria técnica:
-- [Área afetada]
-- [Tipo de mudança]
+### Perguntas respondidas
+- **Pergunta:** [Dúvida que surgiu]
+  **Resposta:** [O que descobrimos]
 
 ---
 
-## Referências do Codebase
+## Decisões e Preferências
 
-- `[path/to/relevant/file.ts]` - [Por que é relevante]
-- `[path/to/another/file.ts]` - [Por que é relevante]
+| O que decidimos | Por quê |
+|-----------------|---------|
+| [Decisão 1] | [Motivo em linguagem simples] |
+| [Decisão 2] | [Motivo em linguagem simples] |
 
 ---
 
-*Este documento foi gerado a partir de uma sessão de brainstorm e pode ser usado como input para o comando `/feature`.*
+## Dúvidas que Ficaram
+
+- [ ] [Pergunta que ainda precisa ser respondida]
+- [ ] [Outra dúvida pendente]
+
+---
+
+## Próximo Passo
+
+**Se quiser transformar isso em feature:**
+Execute `/feature` e use este documento como base para a conversa inicial.
+
+**Descrição sugerida para o `/feature`:**
+> [Uma frase clara descrevendo o que o usuário quer, sem termos técnicos]
+
+---
+
+## Arquivos Relacionados (Referência)
+
+| Arquivo | O que faz |
+|---------|-----------|
+| `[caminho/arquivo]` | [máximo 10 palavras descrevendo] |
+| `[caminho/arquivo]` | [máximo 10 palavras descrevendo] |
+
+---
+
+*Documento de brainstorm - pode ser usado como input para `/feature`*
 ```
 
 ### After Document Generation
@@ -560,7 +608,10 @@ Não encontrei informações claras sobre isso no projeto.
 - ✅ Ask clarifying questions when the topic is vague
 - ✅ Provide practical examples and analogies for non-technical founders
 - ✅ Offer to create summary document when conversation has valuable insights
-- ✅ Create brainstorm documents in `docs/brainstorm/` when user requests
+- ✅ Create brainstorm documents ONLY in `docs/brainstorm/` when user requests
+- ✅ Write documents focused on USER NEEDS, not technical implementation
+- ✅ Use simple language that anyone can understand in documents
+- ✅ Limit file references to path + max 10 words description
 
 **DO NOT:**
 - ❌ Make ANY code changes to application files
@@ -571,6 +622,9 @@ Não encontrei informações claras sobre isso no projeto.
 - ❌ Promise implementation timelines
 - ❌ Skip reading the founder profile
 - ❌ Create brainstorm document without user consent
+- ❌ Create folders or files in `docs/features/` (that's for `/feature` command)
+- ❌ Include technical implementation details in brainstorm documents
+- ❌ Use programming jargon (API, endpoint, service, etc.) in documents
 
 ---
 
@@ -654,8 +708,10 @@ Quer que eu detalhe algum worker específico ou discutir sobre criar um novo?
 
 - **This is a CONVERSATION, not a task execution**
 - **READ-ONLY for code** - never modify application files
-- **CAN create brainstorm docs** - only in `docs/brainstorm/` and only when user requests
+- **CAN create brainstorm docs** - ONLY in `docs/brainstorm/` (NEVER in `docs/features/`)
 - **Adapt to the founder** - their profile guides your communication
 - **Investigate before answering** - don't assume, verify in the code
 - **Be a helpful consultant** - honest, knowledgeable, and patient
 - **Document valuable discussions** - offer to create summary when insights emerge
+- **Documents are USER-FOCUSED** - describe needs and problems, not technical solutions
+- **Keep references minimal** - file path + max 10 words only
