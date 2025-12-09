@@ -16,15 +16,15 @@ export function AuthLayout() {
           <div className="mt-8 space-y-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-primary rounded-full" />
-              <span>Gestão de pacientes e atendimentos</span>
+              <span>Multi-tenancy nativo</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-primary rounded-full" />
-              <span>Controle financeiro simples</span>
+              <span>Autenticação segura</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-primary rounded-full" />
-              <span>Focado em produtividade</span>
+              <span>Pronto para escalar</span>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { Plan, PlanCode, PlanFeatures } from '@fnd/domain';
 import { IPlanRepository, ISubscriptionRepository, IWorkspaceRepository } from '@fnd/database';
 import {
@@ -11,8 +11,11 @@ import {
 @Injectable()
 export class PlanService implements IPlanService {
   constructor(
+    @Inject('IPlanRepository')
     private readonly planRepository: IPlanRepository,
+    @Inject('ISubscriptionRepository')
     private readonly subscriptionRepository: ISubscriptionRepository,
+    @Inject('IWorkspaceRepository')
     private readonly workspaceRepository: IWorkspaceRepository,
   ) {}
 

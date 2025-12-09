@@ -5,7 +5,7 @@ import { IJobQueue, ILoggerService } from '@fnd/backend';
 @Injectable()
 export class EmailQueueService implements IEmailQueueService {
   constructor(
-    @Inject('IJobQueue') private readonly jobQueue: IJobQueue,
+    @Inject('IQueueService') private readonly jobQueue: IJobQueue,
     @Inject('ILoggerService') private readonly logger: ILoggerService,
   ) {}
 

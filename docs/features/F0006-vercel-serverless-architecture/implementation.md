@@ -36,7 +36,7 @@ Refatoração completa para arquitetura serverless usando Vercel Functions e Ups
   - **Database Schema**: Updated to show only billing tables
   - **Migrations**: Updated to single consolidated migration
   - **Kysely Types**: Updated Database interface
-  - **Environment Variables**: Removed REDIS_JOBS_URL, NODE_MODE; Added QSTASH_* vars
+  - **Environment Variables**: Removed REDIS_URL, NODE_MODE; Added QSTASH_* vars
   - **Docker Services**: Removed redis_jobs, redis_insight
   - **Scripts**: Removed dev:workers, added vercel --prod
   - **Key Files**: Updated to reflect serverless structure

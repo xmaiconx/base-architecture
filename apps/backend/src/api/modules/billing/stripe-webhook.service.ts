@@ -1,13 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ISubscriptionRepository, IPlanRepository } from '@fnd/database';
 import { IStripeService, ILoggerService } from '@fnd/backend';
 
 @Injectable()
 export class StripeWebhookService {
   constructor(
+    @Inject('ISubscriptionRepository')
     private readonly subscriptionRepository: ISubscriptionRepository,
+    @Inject('IPlanRepository')
     private readonly planRepository: IPlanRepository,
+    @Inject('IStripeService')
     private readonly stripeService: IStripeService,
+    @Inject('ILoggerService')
     private readonly logger: ILoggerService,
   ) {}
 

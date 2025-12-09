@@ -731,7 +731,7 @@ VERCEL_URL=xxx.vercel.app
 ### Remover
 
 ```bash
-REDIS_JOBS_URL        # Nao usa mais Redis
+REDIS_URL        # Nao usa mais Redis
 NODE_MODE             # Nao tem mais dual-mode
 ```
 

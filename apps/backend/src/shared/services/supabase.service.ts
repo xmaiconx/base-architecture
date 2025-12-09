@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { ISupabaseService, SupabaseUser, IConfigurationService, ILoggerService } from '@fnd/backend';
 import * as crypto from 'crypto';
@@ -20,7 +20,9 @@ export class SupabaseService implements ISupabaseService {
   private readonly webhookSecret: string;
 
   constructor(
+    @Inject('IConfigurationService')
     private readonly configService: IConfigurationService,
+    @Inject('ILoggerService')
     private readonly logger: ILoggerService,
   ) {
     const supabaseUrl = this.configService.getSupabaseUrl();

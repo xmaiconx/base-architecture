@@ -42,9 +42,6 @@ function App() {
               </ProtectedRoute>
             }>
               <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/patients" element={<div>Pacientes (Em desenvolvimento)</div>} />
-              <Route path="/appointments" element={<div>Atendimentos (Em desenvolvimento)</div>} />
-              <Route path="/finances" element={<div>Financeiro (Em desenvolvimento)</div>} />
               <Route path="/profile" element={<div>Perfil (Em desenvolvimento)</div>} />
               <Route path="/settings/workspaces" element={<WorkspacesPage />} />
               <Route path="/settings/workspace/:workspaceId" element={<WorkspaceSettingsPage />} />

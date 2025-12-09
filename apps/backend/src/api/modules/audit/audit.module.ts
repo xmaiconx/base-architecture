@@ -3,9 +3,10 @@ import { AuditService } from './audit.service';
 import { AuditController } from './audit.controller';
 import { AuditLogRepository } from '@fnd/database';
 import { SharedModule } from '../../../shared/shared.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [SharedModule],
+  imports: [SharedModule, AuthModule],
   providers: [
     AuditService,
     {

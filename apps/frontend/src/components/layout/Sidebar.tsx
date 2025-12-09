@@ -3,9 +3,6 @@ import { cn } from '@/lib/utils'
 import { ROUTES } from '@/lib/constants'
 import {
   Home,
-  Users,
-  Calendar,
-  DollarSign,
   User,
   Settings,
   X
@@ -32,14 +29,6 @@ const navigationGroups: NavGroup[] = [
   {
     items: [
       { label: 'Dashboard', href: ROUTES.DASHBOARD, icon: Home }
-    ]
-  },
-  {
-    title: 'Gestão',
-    items: [
-      { label: 'Pacientes', href: ROUTES.PATIENTS, icon: Users },
-      { label: 'Atendimentos', href: ROUTES.APPOINTMENTS, icon: Calendar },
-      { label: 'Financeiro', href: ROUTES.FINANCES, icon: DollarSign },
     ]
   },
   {

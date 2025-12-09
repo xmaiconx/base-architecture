@@ -5,9 +5,10 @@ import { StripeService } from './stripe.service';
 import { PlanService } from './plan.service';
 import { StripeWebhookService } from './stripe-webhook.service';
 import { SharedModule } from '../../../shared/shared.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [SharedModule],
+  imports: [SharedModule, AuthModule],
   controllers: [BillingController],
   providers: [
     BillingService,

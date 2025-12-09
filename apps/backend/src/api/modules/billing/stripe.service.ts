@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import Stripe from 'stripe';
 import {
   IStripeService,
@@ -11,7 +11,10 @@ import { IConfigurationService } from '@fnd/backend';
 export class StripeService implements IStripeService {
   private stripe: Stripe;
 
-  constructor(private readonly configService: IConfigurationService) {
+  constructor(
+    @Inject('IConfigurationService')
+    private readonly configService: IConfigurationService,
+  ) {
     const secretKey = this.configService.getStripeSecretKey();
     this.stripe = new Stripe(secretKey, {
       apiVersion: '2025-02-24.acacia',

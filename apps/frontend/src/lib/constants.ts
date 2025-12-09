@@ -7,9 +7,6 @@ export const ROUTES = {
   SIGNUP: '/signup',
   CONFIRM_EMAIL: '/confirm-email',
   DASHBOARD: '/dashboard',
-  PATIENTS: '/patients',
-  APPOINTMENTS: '/appointments',
-  FINANCES: '/finances',
   PROFILE: '/profile',
   SETTINGS_WORKSPACES: '/settings/workspaces',
   SETTINGS_WORKSPACE: (id: string) => `/settings/workspace/${id}`,
@@ -24,9 +21,6 @@ export const API_ENDPOINTS = {
     ME: '/auth/me',
   },
   WORKSPACES: '/workspaces',
-  PATIENTS: '/patients',
-  APPOINTMENTS: '/appointments',
-  PAYMENTS: '/payments',
 } as const
 
 export const STORAGE_KEYS = {
@@ -42,7 +36,4 @@ export const QUERY_KEYS = {
   ONBOARDING: (workspaceId: string) => ['onboarding', workspaceId],
   CONTENT: (workspaceId: string) => ['content', workspaceId],
   CALENDAR: (workspaceId: string) => ['calendar', workspaceId],
-  PATIENTS: ['patients'],
-  APPOINTMENTS: ['appointments'],
-  PAYMENTS: ['payments'],
 } as const

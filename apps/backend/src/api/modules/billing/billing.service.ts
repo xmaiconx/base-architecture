@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, ConflictException, Inject } from '@nestjs/common';
 import {
   IAccountRepository,
   IWorkspaceRepository,
@@ -19,13 +19,20 @@ import {
 @Injectable()
 export class BillingService {
   constructor(
+    @Inject('IAccountRepository')
     private readonly accountRepository: IAccountRepository,
+    @Inject('IWorkspaceRepository')
     private readonly workspaceRepository: IWorkspaceRepository,
+    @Inject('IWorkspaceUserRepository')
     private readonly workspaceUserRepository: IWorkspaceUserRepository,
+    @Inject('IPlanRepository')
     private readonly planRepository: IPlanRepository,
+    @Inject('ISubscriptionRepository')
     private readonly subscriptionRepository: ISubscriptionRepository,
+    @Inject('IStripeService')
     private readonly stripeService: IStripeService,
     private readonly planService: PlanService,
+    @Inject('IConfigurationService')
     private readonly configService: IConfigurationService,
   ) {}
 

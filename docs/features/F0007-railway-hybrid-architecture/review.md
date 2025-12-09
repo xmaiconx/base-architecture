@@ -28,7 +28,7 @@ A implementação da arquitetura híbrida Railway com BullMQ estava bem estrutur
 
 ## 🔧 Issues Found & Fixed
 
-### Issue #1: Inconsistência REDIS_URL vs REDIS_JOBS_URL
+### Issue #1: Inconsistência REDIS_URL vs REDIS_URL
 
 **Category:** Project Patterns
 **Files:**
@@ -38,16 +38,16 @@ A implementação da arquitetura híbrida Railway com BullMQ estava bem estrutur
 
 **Problem:**
 ```bash
-# .env.example usava REDIS_JOBS_URL
-REDIS_JOBS_URL=redis://localhost:6379
+# .env.example usava REDIS_URL
+REDIS_URL=redis://localhost:6379
 
-# docker-entrypoint.sh verificava REDIS_JOBS_URL
-if [ -z "$REDIS_JOBS_URL" ]; then
-  echo "ERROR: REDIS_JOBS_URL is required"
+# docker-entrypoint.sh verificava REDIS_URL
+if [ -z "$REDIS_URL" ]; then
+  echo "ERROR: REDIS_URL is required"
 ```
 
 **Why it's a problem:**
-O `ConfigurationService` busca `REDIS_URL` (conforme CLAUDE.md), mas os arquivos de configuração usavam `REDIS_JOBS_URL`. Isso causaria **falha em runtime** porque a variável esperada nunca seria encontrada.
+O `ConfigurationService` busca `REDIS_URL` (conforme CLAUDE.md), mas os arquivos de configuração usavam `REDIS_URL`. Isso causaria **falha em runtime** porque a variável esperada nunca seria encontrada.
 
 **Fix Applied:**
 ```bash
@@ -240,8 +240,8 @@ O `IConfigurationService` era injetado mas **nunca utilizado** em nenhum dos doi
 
 | File | Change Type |
 |------|-------------|
-| `apps/backend/.env.example` | Fixed REDIS_JOBS_URL → REDIS_URL |
-| `apps/backend/docker-entrypoint.sh` | Fixed REDIS_JOBS_URL → REDIS_URL |
+| `apps/backend/.env.example` | Fixed REDIS_URL → REDIS_URL |
+| `apps/backend/docker-entrypoint.sh` | Fixed REDIS_URL → REDIS_URL |
 | `apps/backend/src/workers/workers.module.ts` | Added BullModule.forRootAsync with proper Redis connection |
 | `apps/backend/src/api/app.module.ts` | Added conditional WorkersModule import |
 | `apps/backend/src/shared/adapters/bullmq-queue.adapter.ts` | Removed unused IConfigurationService injection |

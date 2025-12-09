@@ -4,9 +4,10 @@ import { WorkspaceService } from './workspace.service';
 import { WorkspaceController } from './workspace.controller';
 import { WorkspaceFeatureGuard } from '../../guards/workspace-feature.guard';
 import { SharedModule } from '../../../shared/shared.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [CqrsModule, SharedModule],
+  imports: [CqrsModule, SharedModule, AuthModule],
   providers: [WorkspaceService, WorkspaceFeatureGuard],
   controllers: [WorkspaceController],
   exports: [WorkspaceService],

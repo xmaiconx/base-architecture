@@ -78,7 +78,7 @@ After starting the services, update your `.env` file:
 DATABASE_URL=postgresql://fnd_user:fnd_pass@localhost:5432/fnd_easyflow
 
 # Local Docker Redis
-REDIS_JOBS_URL=redis://localhost:6379
+REDIS_URL=redis://localhost:6379
 ```
 
 ## PgAdmin Setup
