@@ -43,8 +43,10 @@ fnd-easyflow-template/
 │   ├── domain/          # @fnd/domain - Domain entities, enums, types
 │   ├── backend/         # @fnd/backend - Service interfaces
 │   └── app-database/    # @fnd/database - Data access (PostgreSQL, uses domain entities)
-└── infra/
-    └── docker-compose.yml  # Ambiente local (PostgreSQL, Redis, PgAdmin, Redis Insight)
+├── infra/
+│   └── docker-compose.yml  # Ambiente local (PostgreSQL, Redis, PgAdmin, Redis Insight)
+└── supabase/
+    └── config.toml      # Configuração local do Supabase CLI
 ```
 
 ## 🔧 Convenções de Nomenclatura
@@ -71,8 +73,8 @@ fnd-easyflow-template/
 
 ### Domain Layer (`libs/domain/src/`)
 ```
-├── entities/          # Account, User, Workspace, WorkspaceUser, AuditLog
-├── enums/             # EntityStatus, UserRole, OnboardingStatus, PaymentProvider (um por arquivo)
+├── entities/          # Account, AuditLog, Plan, PlanPrice, Subscription, User, WebhookEvent, Workspace, WorkspaceUser
+├── enums/             # EntityStatus, OnboardingStatus, PaymentProvider, PlanCode, SubscriptionStatus, UserRole, WebhookStatus, WebhookType
 ├── types/             # Billing types, feature flags, etc.
 └── index.ts           # Barrel exports
 ```
@@ -215,10 +217,12 @@ import { AccountCreatedEvent } from './events';
 - `ILoggerService` → `WinstonLoggerService`
 - `IEmailService` → `ResendEmailService`
 - `IConfigurationService` → `ConfigurationService`
-- `IEncryptionService` → `EncryptionService`
-- `IPaymentService` → `StripePaymentService`
+- `ISupabaseService` → `SupabaseService`
+- `IQueueService` → `BullMQQueueAdapter`
+- `IEventPublisher` → `BullMQEventPublisher`
 - `DATABASE` → Kysely instance (PostgreSQL)
-- Todos os Repositories (User, Account, Workspace, WorkspaceUser, AuditLog, Subscription, Plan, PlanPrice, PaymentHistory)
+- `REDIS_CONNECTION` → IORedis instance
+- Todos os Repositories (User, Account, Workspace, WorkspaceUser, AuditLog, Subscription, Plan, PlanPrice, WebhookEvent)
 
 ### Workers Architecture (BullMQ)
 
@@ -284,15 +288,7 @@ import { AccountCreatedEvent } from './events';
 - **Implementation**: `[Entity]Repository` (Kysely)
 - **Retorna**: Domain entities (@fnd/domain)
 
-### 4. Encryption Service
-**Arquivo**: `apps/backend/src/shared/services/encryption.service.ts`
-
-**Interface**: `IEncryptionService` (libs/backend/src/security/)
-- **Algorithm**: AES-256-GCM
-- **Purpose**: Criptografa credenciais sensíveis (tokens, API keys)
-- **Methods**: `encrypt(plaintext: string): string`, `decrypt(ciphertext: string): string`
-
-### 5. Dependency Injection
+### 4. Dependency Injection
 - **NestJS DI Container**: Gerencia todas as dependências
 - **Interface-based**: Sempre injetar interfaces, não implementações
 - **Tokens**: Strings para providers (`'IUserRepository'`)
@@ -330,15 +326,18 @@ workspaces            # Multi-workspace per account
 workspace_users       # User-workspace bridge table
 users                 # Auth + roles (linked to account_id)
 audit_logs            # Audit trail
+webhook_events        # Webhook tracking (Stripe, Supabase)
 plans                 # Subscription plans (Stripe Products)
 plan_prices           # Versioned prices for plans
 subscriptions         # Active subscriptions
-payment_history       # Payment history from Stripe
 ```
 
 ### Migrations (Knex)
 **Pasta**: `libs/app-database/migrations/`
-- `20250101001_create_initial_schema.js` - Consolidated initial schema (all tables)
+- `20250101001_create_initial_schema.js` - Schema inicial consolidado (todas as tabelas)
+- `20250101002_seed_default_plans.js` - Seed de planos padrão
+- `20250103001_add_auth_user_id.js` - Adiciona coluna auth_user_id
+- `20250103002_remove_legacy_auth_columns.js` - Remove colunas legadas de auth
 
 ### Kysely Types
 **Arquivo**: `libs/app-database/src/types/Database.ts`
@@ -349,10 +348,10 @@ export interface Database {
   workspace_users: WorkspaceUserTable;
   users: UserTable;
   audit_logs: AuditLogTable;
+  webhook_events: WebhookEventTable;
   plans: PlanTable;
   plan_prices: PlanPriceTable;
   subscriptions: SubscriptionTable;
-  payment_history: PaymentHistoryTable;
 }
 ```
 
@@ -522,11 +521,9 @@ apps/frontend/src/
 - ✅ Enums: Espelhar exatamente com mesmos valores em frontend (não importar de domain)
 
 ### Segurança
-- ✅ SEMPRE criptografar credenciais sensíveis (usar `IEncryptionService`)
-- ✅ Credentials (tokens, API keys) devem ser encrypted at rest
-- ✅ Usar AES-256-GCM para encryption (via `ENCRYPTION_KEY` env var)
 - ✅ NUNCA logar credenciais ou dados sensíveis (mascarar em logs)
 - ✅ Validar ownership via `account_id` em todos os endpoints
+- ✅ Usar guards de autenticação em todos os endpoints protegidos
 - ✅ Super Admin access: validar via `SUPER_ADMIN_EMAIL` quando necessário
 
 ## 🔍 Observability
@@ -542,19 +539,6 @@ logger.info('User created', {
 ```
 
 **Levels**: error, warn, info, debug
-
-### Pipeline Execution History
-```typescript
-context.executionHistory.push({
-  stepName: 'GenerateAIResponseStep',
-  startedAt: new Date(),
-  completedAt: new Date(),
-  durationMs: 150,
-  continued: true,
-  stopReason?: 'Optional stop reason',
-  error?: 'Error message if failed'
-});
-```
 
 ## 🏛️ Configuration Best Practices
 
@@ -602,20 +586,24 @@ const apiKey = this.config.getStripeSecretKey();
 ### Libs (Layers)
 - `libs/domain/src/index.ts` - Domain barrel export (entities, enums, types)
 - `libs/backend/src/` - Interfaces layer
+  - `billing/` - Billing interfaces (IPlanService)
   - `cqrs/` - CQRS interfaces (ICommand, IEvent, ICommandHandler)
-  - `services/` - Service interfaces (ILoggerService, IEmailService, IEncryptionService, etc.)
-  - `messaging/` - Messaging interfaces (IEventBroker, IJobQueue)
-  - `pipelines/` - Pipeline interfaces (IMessagePipeline, IMessagePipelineStep)
-  - `webhooks/` - Webhook interfaces (IWebhookParser, IMessageParser)
-  - `scheduling/` - Scheduling interfaces (IScheduleService)
   - `features/` - Feature flags interfaces (IFeatureFlagService)
+  - `messaging/` - Messaging interfaces (IEventPublisher, IQueueService)
   - `payment/` - Payment interfaces (IPaymentService)
+  - `scheduling/` - Scheduling interfaces (IScheduleService)
+  - `services/` - Service interfaces (ILoggerService, IEmailService, IEncryptionService, etc.)
+  - `webhooks/` - Webhook interfaces (IWebhookParser, ParseResult)
 - `libs/app-database/src/index.ts` - Repositories barrel export (PostgreSQL, uses domain entities)
 
 ### Database
 - `libs/app-database/migrations/` - Knex migrations (PostgreSQL)
-- `libs/app-database/knexfile.ts` - Migration config
+- `libs/app-database/knexfile.js` - Migration config
 - `libs/app-database/src/types/Database.ts` - Kysely schema (PostgreSQL)
+
+## 📦 Features Desenvolvidas
+
+Funcionalidades desenvolvidas no projeto estao documentadas em `/docs/features/`. Cada feature possui pasta propria com estrutura padronizada contendo tres documentos: `about.md` (requisitos e escopo), `discovery.md` (processo de descoberta e decisoes) e `implementation.md` (detalhes tecnicos da implementacao). Consultar esta pasta para entender contexto de features existentes antes de implementar novas funcionalidades.
 
 ## 🎯 Design Principles
 
@@ -630,10 +618,10 @@ const apiKey = this.config.getStripeSecretKey();
 
 ### Domain Layer Organization
 **Entities**: `libs/domain/src/entities/`
-- Account, User, Workspace, WorkspaceUser, AuditLog, Subscription, Plan, PlanPrice, PaymentHistory
+- Account, AuditLog, Plan, PlanPrice, Subscription, User, WebhookEvent, Workspace, WorkspaceUser
 
 **Enums**: `libs/domain/src/enums/`
-- EntityStatus, UserRole, OnboardingStatus, PaymentProvider
+- EntityStatus, OnboardingStatus, PaymentProvider, PlanCode, SubscriptionStatus, UserRole, WebhookStatus, WebhookType
 
 **Types**: `libs/domain/src/types/`
 - Billing types, feature flags, audit types
