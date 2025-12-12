@@ -46,59 +46,98 @@ cat docs/founder_profile.md
 
 ---
 
-## Simplified Question Format
+## Formato de Perguntas de Clarificação
 
-When clarification is needed, present questions in this format:
+**⚠️ IMPORTANTE:** Apresente as perguntas em formato estruturado com blocos separados para facilitar a leitura.
 
-```
-📋 **Perguntas de Clarificação**
+### Template do Questionário
 
-Para planejar melhor esta feature, preciso de algumas definições:
+Apresente TODAS as perguntas de uma vez com opções e recomendações claras:
 
-**1. [Pergunta em linguagem simples]**
-   a) [Opção A - descrição simples]
-   b) [Opção B - descrição simples] ⭐ Recomendado
-   c) [Opção C - descrição simples]
+```markdown
+## 📋 Perguntas de Clarificação
 
-**2. [Pergunta em linguagem simples]**
-   a) [Opção A - descrição simples] ⭐ Recomendado
-   b) [Opção B - descrição simples]
-
-**3. [Pergunta em linguagem simples]**
-   a) [Opção A - descrição simples]
-   b) [Opção B - descrição simples] ⭐ Recomendado
-   c) [Opção C - descrição simples]
-   d) [Opção D - descrição simples]
+Para finalizar o planejamento técnico, preciso de algumas definições:
 
 ---
 
-💡 **Responda de forma simples:**
+### 1. [Pergunta em linguagem simples]
+
+- a) [Opção A - descrição simples]
+- b) [Opção B - descrição simples]
+- c) [Opção C - descrição simples]
+
+→ **[RECOMENDADO: b]** - [Breve justificativa]
+
+---
+
+### 2. [Pergunta em linguagem simples]
+
+- a) [Opção A - descrição simples]
+- b) [Opção B - descrição simples]
+
+→ **[RECOMENDADO: a]** - [Breve justificativa]
+
+---
+
+### 3. [Pergunta em linguagem simples]
+
+- a) [Opção A - descrição simples]
+- b) [Opção B - descrição simples]
+- c) [Opção C - descrição simples]
+
+→ **[RECOMENDADO: b]** - [Breve justificativa]
+
+---
+
+## 💡 Responda de forma simples:
+
 - Para escolher opções específicas: `1a, 2b, 3b`
 - Para aceitar todas as recomendadas: `recomendado`
 - Para misturar: `1a, recomendado` (1a + recomendado nas demais)
 ```
 
-**Example Questions (adapt to context):**
+### Exemplo de Perguntas (adapte ao contexto):
 
-1. **Onde os dados devem ser salvos?**
-   a) Apenas no navegador do usuário (mais simples, dados podem ser perdidos)
-   b) No servidor com banco de dados ⭐ Recomendado
-   c) Ambos (offline + sincronização)
+---
 
-2. **Quem pode acessar esta funcionalidade?**
-   a) Todos os usuários logados ⭐ Recomendado
-   b) Apenas administradores
-   c) Usuários com permissão específica (requer sistema de permissões)
+### 1. Onde os dados devem ser salvos?
 
-3. **Precisa de notificações em tempo real?**
-   a) Não, o usuário atualiza a página manualmente ⭐ Recomendado
-   b) Sim, atualização automática na tela
-   c) Sim, com notificações push no celular
+- a) Apenas no navegador do usuário (mais simples, dados podem ser perdidos)
+- b) No servidor com banco de dados
+- c) Ambos (offline + sincronização)
 
-4. **Como deve funcionar em caso de erro?**
-   a) Mostrar mensagem de erro simples ⭐ Recomendado
-   b) Tentar novamente automaticamente
-   c) Salvar para processar depois
+→ **[RECOMENDADO: b]** - Persistência segura e consistente
+
+---
+
+### 2. Quem pode acessar esta funcionalidade?
+
+- a) Todos os usuários logados
+- b) Apenas administradores
+- c) Usuários com permissão específica (requer sistema de permissões)
+
+→ **[RECOMENDADO: a]** - Simplicidade, sem overhead de permissões
+
+---
+
+### 3. Precisa de notificações em tempo real?
+
+- a) Não, o usuário atualiza a página manualmente
+- b) Sim, atualização automática na tela
+- c) Sim, com notificações push no celular
+
+→ **[RECOMENDADO: a]** - YAGNI, adicionar depois se necessário
+
+---
+
+### 4. Como deve funcionar em caso de erro?
+
+- a) Mostrar mensagem de erro simples
+- b) Tentar novamente automaticamente
+- c) Salvar para processar depois
+
+→ **[RECOMENDADO: a]** - KISS, feedback claro ao usuário
 
 ## Phase 1: Identify Feature (AUTOMATIC)
 
