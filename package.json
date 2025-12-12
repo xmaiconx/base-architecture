@@ -22,8 +22,9 @@
     "seed:run": "cd libs/app-database && npm run seed:run"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
+    "rimraf": "^5.0.0",
+    "supabase": "^2.66.0",
     "turbo": "^2.0.0",
-    "rimraf": "^5.0.0"
+    "typescript": "^5.0.0"
   }
 }
